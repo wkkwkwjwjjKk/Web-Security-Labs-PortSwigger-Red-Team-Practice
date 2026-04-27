@@ -1,0 +1,47 @@
+# Lab: User Role Can Be Modified in User Profile
+
+## Objetivo
+
+Explorar uma vulnerabilidade de controle de acesso onde o campo de função (role) do usuário pode ser alterado diretamente pelo próprio usuário, permitindo elevação de privilégio.
+
+---
+
+## Análise
+
+Durante a análise da funcionalidade de edição de perfil, foi identificado que a aplicação permitia a modificação do campo `role` na requisição.
+
+Não havia validação no backend para restringir alterações desse atributo sensível.
+
+---
+
+## Exploração
+
+Ao interceptar a requisição de atualização de perfil, foi possível modificar o valor do campo `role`.
+
+Após enviar a requisição alterada, o usuário passou a ter permissões de nível superior, incluindo acesso a funcionalidades restritas.
+
+---
+
+## Impacto
+
+Essa vulnerabilidade pode permitir:
+
+* elevação de privilégio (Privilege Escalation)
+* acesso não autorizado a funcionalidades administrativas
+* manipulação de dados sensíveis
+* comprometimento total da aplicação, dependendo do nível de acesso obtido
+
+---
+
+## Mitigação
+
+* impedir que usuários controlem campos sensíveis como `role`
+* aplicar validação de permissões no backend
+* implementar controle de acesso baseado em papéis (RBAC)
+* usar regras de autorização centralizadas no servidor
+
+---
+
+## Aprendizado
+
+Este laboratório demonstra como a falta de controle sobre atributos sensíveis em requisições pode permitir elevação de privilégio e comprometimento da aplicação.
