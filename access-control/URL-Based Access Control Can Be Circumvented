@@ -1,0 +1,47 @@
+# Lab: URL-Based Access Control Can Be Circumvented
+
+## Objetivo
+
+Explorar uma vulnerabilidade de controle de acesso baseada em URL, onde restrições de acesso podem ser contornadas para acessar recursos protegidos.
+
+---
+
+## Análise
+
+Durante a análise da aplicação, foi identificado que o controle de acesso a determinadas páginas era baseado apenas na URL acessada.
+
+Não havia validação adequada no backend para verificar se o usuário tinha permissão para acessar o recurso.
+
+---
+
+## Exploração
+
+Ao manipular a URL diretamente, foi possível acessar páginas restritas sem autenticação ou sem possuir privilégios adequados.
+
+Isso demonstrou que o controle de acesso estava sendo aplicado de forma superficial, apenas na camada de roteamento.
+
+---
+
+## Impacto
+
+Essa vulnerabilidade pode permitir:
+
+* acesso não autorizado a funcionalidades restritas
+* exposição de dados sensíveis
+* bypass de autenticação ou autorização
+* comprometimento de áreas administrativas
+
+---
+
+## Mitigação
+
+* validar permissões no backend para cada requisição
+* não confiar apenas em restrições baseadas em URL
+* implementar controle de acesso centralizado (RBAC)
+* proteger rotas sensíveis com autenticação obrigatória
+
+---
+
+## Aprendizado
+
+Este laboratório demonstra como controles de acesso baseados apenas em URL são insuficientes e podem ser facilmente contornados sem validação adequada no servidor.
