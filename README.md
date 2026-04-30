@@ -18,26 +18,41 @@ Estudar vulnerabilidades reais de aplicações web
 
 
 User ID controlled by request parameter 
+
 User ID controlled by request parameter with password disclosure 
+
 User ID controlled by request parameter with data leakage in redirect 
+
 User ID controlled by request parameter with unpredictable user IDs 
+
 URL-based access control can be circumvented 
+
 Method-based access control can be circumvented 
-Referer-based access control 
+
+Referer-based access control
+
 Insecure Direct Object References (IDOR) 
-User role can be modified in user profile 
+
+User role can be modified in user profile
+
 Unprotected admin functionality 
+
 Unprotected admin functionality with unpredictable URL 
+
 Multi-step process with no access control on one step 
 
 
 💉 Command Injection
 
 
-Basic Command Injection 
+Basic Command Injection
+
 Command Injection (delay-based) 
+
 Blind OS Command Injection with output redirection 
+
 Blind OS Command Injection with out-of-band interaction  
+
 Blind OS Command Injection with out-of-band data exfiltration 
 
 
@@ -45,19 +60,27 @@ Blind OS Command Injection with out-of-band data exfiltration
 
 
 Remote Code Execution via Web Shell Upload 
+
 Content-Type restriction bypass 
+
 Path traversal upload 
+
 Extension blacklist bypass 
+
 Obfuscated file extension bypass 
 
 
 🔐 Authentication Attacks
 
  
-Username enumeration via different responses 
-Username enumeration via subtly different responses 
-Username enumeration via response timing 
+Username enumeration via different responses
+
+Username enumeration via subtly different responses
+
+Username enumeration via response timing
+
 Broken brute-force protection (IP block) 
+
 Password-based login 
 
 
@@ -67,10 +90,15 @@ Password-based login
 
 
 Identificação de vulnerabilidades web 
+
 Exploração de falhas de autenticação e autorização 
+
 Execução remota de comandos (RCE) 
+
 Técnicas de bypass de validações 
+
 Análise de comportamento de aplicações 
+
 Documentação técnica de vulnerabilidades 
 
 
@@ -78,8 +106,11 @@ Documentação técnica de vulnerabilidades
 
 
 Burp Suite 
+
 Intruder 
+
 Wordlists 
+
 Browser DevTools 
 
 
