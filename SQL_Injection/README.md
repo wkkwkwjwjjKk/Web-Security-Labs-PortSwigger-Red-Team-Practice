@@ -140,7 +140,3 @@ Labs realizados na:
 PortSwigger Web Security Academy
 [https://portswigger.net/web-security](https://portswigger.net/web-security)
 
-```
-
-Isso já fica muito forte como documentação de estudo e portfólio.
-```
