@@ -81,4 +81,3 @@ A aplicação não associa corretamente o estado do 2FA à sessão no servidor. 
 
 ---
 
-Se quiser, posso te ajudar a transformar isso num **repositório completo de PortSwigger write-ups (com estrutura, pastas por lab e padrão profissional)**.
