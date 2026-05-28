@@ -1,199 +1,140 @@
-# Web Security Labs
+# Web Security Labs - PortSwigger Web Security Academy
 
-Repositório dedicado a estudos práticos de segurança ofensiva e exploração de vulnerabilidades web utilizando labs da PortSwigger Web Security Academy.
+Repositório dedicado aos meus estudos práticos em **Application Security (AppSec)** e exploração manual de vulnerabilidades web.
 
----
-
-# Objetivo
-
-Este repositório foi criado para documentar:
-
-- resolução de labs
-- writeups técnicos
-- exploração manual de vulnerabilidades
-- metodologia de pentest web
-- aprendizado contínuo em Application Security
-
-O foco principal é desenvolver habilidades práticas em:
-- Web Application Security
-- Offensive Security
-- Pentest Web
-- HTTP Analysis
-- Exploração manual
-- Enumeração
-- Bypass de filtros
+**Autor:** Aislan Silva  
+**Última atualização:** Maio de 2026  
+**Foco:** Pentest Web / Bug Bounty / Exploração de APIs
 
 ---
 
-# Vulnerabilidades Estudadas
+## 🎯 Objetivo
 
-## SQL Injection
+Documentar minha evolução prática em segurança ofensiva, com foco em:
 
-Labs resolvidos envolvendo:
-
-- Authentication Bypass
-- UNION Attacks
-- Blind SQL Injection
-- Boolean-Based SQLi
-- Time-Based SQLi
-- Conditional Responses
-- XML-based SQLi
-- WAF Bypass
-- Database Enumeration
-
-### Conceitos praticados
-- UNION SELECT
-- comments (`--`)
-- concatenação SQL
-- information_schema
-- XML entities
-- conditional logic
-- delays
-- encoding bypass
+- Exploração manual de vulnerabilidades em aplicações web e APIs
+- Resolução de laboratórios da PortSwigger Web Security Academy
+- Desenvolvimento de raciocínio ofensivo (attack thinking)
+- Criação e adaptação de payloads
+- Análise de requisições HTTP com Burp Suite
 
 ---
 
-## SSRF (Server-Side Request Forgery)
+## 🧠 Resumo Técnico (Visão Prática)
 
-Labs envolvendo:
+Experiência aplicada em:
 
-- Basic SSRF
-- SSRF against localhost
-- SSRF with blacklist bypass
-- SSRF with open redirect
-- SSRF filter bypass
-
-### Conceitos praticados
-- internal services
-- localhost access
-- URL parsing
-- open redirect abuse
-- SSRF chaining
+- Interceptação e manipulação de tráfego HTTP/HTTPS
+- Enumeração de endpoints e superfícies de ataque
+- Exploração de falhas lógicas em APIs
+- Bypass de controles de autenticação e autorização
+- Análise de código client-side (JavaScript)
+- Testes manuais com Burp Suite (Repeater, Intruder, Proxy)
 
 ---
 
-## Access Control Vulnerabilities
+## 🛡️ Vulnerabilidades Exploradas (Hands-on)
 
-Labs resolvidos:
+### SQL Injection
+- Authentication bypass via SQLi
+- UNION-based extraction
+- Blind SQLi (boolean-based e time-based)
+- Conditional responses exploitation
+- Database enumeration (`information_schema`)
+- WAF bypass techniques
 
-- Unprotected Admin Functionality
-- IDOR
-- User Role Modification
-- Password Disclosure
-- Multi-Step Process Vulnerabilities
-- Referer-Based Access Control
-- URL-Based Access Control Bypass
+### SSRF (Server-Side Request Forgery)
+- Basic SSRF exploitation
+- SSRF contra localhost/internal services
+- Bypass de blacklist e whitelist filters
+- SSRF via Open Redirect chaining
 
-### Conceitos praticados
-- privilege escalation
-- parameter tampering
-- horizontal escalation
-- vertical escalation
-- insecure direct object references
+### Access Control (Broken Authorization)
+- IDOR (Insecure Direct Object Reference)
+- Vertical e horizontal privilege escalation
+- Admin panel bypass
+- Referer-based access control bypass
+- Multi-step workflow bypass
 
----
+### Command Injection
+- Blind command injection
+- Time-based detection techniques
+- Out-of-Band (OAST) exfiltration
+- Output redirection exploitation
 
-## Command Injection
+### File Upload Vulnerabilities
+- Web shell upload
+- Bypass de whitelist/blacklist
+- Content-Type manipulation
+- Extension obfuscation
+- Path traversal via upload features
 
-Labs envolvendo:
+### Authentication Vulnerabilities
+- Username enumeration
+- Broken brute-force protection
+- Logic flaws em login flows
+- Bypass de MFA/2FA em cenários específicos
 
-- Basic Command Injection
-- Blind Command Injection
-- Time Delays
-- Output Redirection
-- Out-of-Band Data Exfiltration
-
-### Conceitos praticados
-- OS command execution
-- blind injection
-- time-based detection
-- OAST
-- shell operators
-
----
-
-## File Upload Vulnerabilities
-
-Labs resolvidos:
-
-- Web Shell Upload
-- Extension Blacklist Bypass
-- Content-Type Restriction Bypass
-- Obfuscated File Extensions
-- Path Traversal Upload
-
-### Conceitos praticados
-- file validation bypass
-- MIME bypass
-- upload filters
-- web shells
-- path traversal
+### API Security
+- API endpoint discovery via documentation
+- Exploração de endpoints não utilizados
+- Mass Assignment (object property injection)
+- Server-Side Parameter Pollution (SSPP - Query e REST path)
 
 ---
 
-## Authentication Vulnerabilities
+## 📊 Progresso em Labs
 
-Labs envolvendo:
-
-- Username Enumeration
-- Broken Brute Force Protection
-- MFA Vulnerabilities
-- Response Timing Attacks
-
-### Conceitos praticados
-- brute force logic
-- timing analysis
-- authentication flaws
-- enumeration techniques
+| Categoria | Dificuldade | Status |
+|-----------|------------|--------|
+| SQL Injection | Apprentice → Expert | ✅ Concluído |
+| SSRF | Practitioner | ✅ Concluído |
+| Access Control | Apprentice → Practitioner | ✅ Concluído |
+| Command Injection | Practitioner | ✅ Concluído |
+| File Upload | Practitioner | ✅ Concluído |
+| Authentication | Practitioner | ✅ Concluído |
+| API Security & SSPP | Apprentice → Expert | 5+ labs resolvidos |
 
 ---
 
-# Ferramentas Utilizadas
+## 🛠️ Ferramentas Utilizadas
 
-- Burp Suite
-- Burp Repeater
-- Burp Intruder
+- Burp Suite Professional (Proxy, Repeater, Intruder)
+- Browser DevTools (Network / Sources)
 - Hackvertor
-- Browser DevTools
-- HTTP Requests
-- Python (automação básica)
+- Python (scripts auxiliares de análise)
+- Wordlists customizadas
 
 ---
 
-# Habilidades Desenvolvidas
+## 🧪 Metodologia de Teste
 
-- análise de requisições HTTP
-- exploração manual de vulnerabilidades
-- enumeração de aplicações
-- bypass de filtros
-- manipulação de payloads
-- raciocínio ofensivo
-- análise de respostas
-- entendimento de lógica insegura
+- Interceptação e análise de requisições HTTP
+- Testes manuais de parâmetros e inputs
+- Enumeração de endpoints e funcionalidades ocultas
+- Reutilização de payloads e adaptação por contexto
+- Validação de comportamento do backend via Burp Repeater
 
 ---
 
-# Mitigações Estudadas
+## 🔐 Mitigações Estudadas
 
-- Prepared Statements
-- Parameterized Queries
-- Input Validation
-- Least Privilege
-- Secure File Validation
-- Proper Access Control
-- Output Encoding
+- Prepared Statements (SQLi prevention)
+- Proper Access Control (RBAC / ABAC)
+- Input validation + sanitization
+- Secure file upload handling
+- Output encoding
+- Rate limiting e proteção contra brute force
 
 ---
 
-# Plataforma
+## 📌 Observação
 
-Labs realizados na:
+Todos os testes foram realizados exclusivamente em ambientes controlados da **PortSwigger Web Security Academy**, com finalidade educacional.
+
+---
+
+## 📍 Referência
 
 PortSwigger Web Security Academy  
 https://portswigger.net/web-security
-
----
-
-# Observação
-
-Todos os testes e explorações realizados neste repositório foram executados exclusivamente em ambientes autorizados e laboratoriais destinados ao aprendizado de segurança ofensiva.
