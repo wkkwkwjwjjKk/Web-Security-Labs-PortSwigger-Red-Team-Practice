@@ -102,5 +102,3 @@ O aplicativo utiliza JWT para gerenciar sessões. No entanto, o back-end **não 
 **Laboratório resolvido com sucesso!** ✅
 
 ---
-
-**Quer que eu adicione seção de screenshots ou versão em inglês também?** Posso ajustar o write-up conforme sua preferência.
