@@ -122,9 +122,3 @@ A funcionalidade de vinculação de contas é vulnerável se não houver proteç
 
 ---
 
-✅ **Vantagem dessa estrutura**:
-- Usa exatamente os nomes que você quer.
-- É organizado e fácil de ler no GitHub.
-- Você pode **adicionar novos laboratórios depois** só copiando o modelo de seção abaixo do último, sem precisar mudar nada do que já está pronto.
-
-Quer que eu te deixe também um modelo vazio pronto para você só preencher quando for adicionar os próximos labs?
