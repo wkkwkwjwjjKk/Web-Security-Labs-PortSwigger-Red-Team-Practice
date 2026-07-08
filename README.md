@@ -1,6 +1,4 @@
-Perfeito! Vou primeiro **melhorar e unificar seu write-up principal**, organizando tudo o que você já tem — incluindo o **SSRF que resolveu hoje**, o Command Injection que você já domina e mantendo toda a estrutura profissional do seu repositório.
 
-Depois, quando você confirmar, eu passo o plano de estudo alinhado exatamente com o seu nível.
 
 ---
 
