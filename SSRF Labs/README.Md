@@ -46,5 +46,3 @@ Principais aprendizados:
     Listas brancas não são infalíveis — dependem totalmente de uma análise consistente em todas as etapas
     Diferenças na interpretação de URLs entre validação e requisição = brecha de segurança
     Codificações duplas e recursos padrão da URI (@, #, etc.) são ferramentas comuns de bypass
-
-🎯 PRÓXIMO PASSO
