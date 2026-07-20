@@ -1,6 +1,6 @@
 ---
 
-# 📝 Write-up: XML External Entity (XXE) Injection
+# 📝 XML External Entity (XXE) Injection
 ## Trilha Completa – PortSwigger Web Security Academy
 
 ---
