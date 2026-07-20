@@ -9,16 +9,16 @@
 | Plataforma | PortSwigger Web Security Academy |
 | Idioma | Português (PT‑BR) |
 | Total de laboratórios | 20 |
-| Concluídos | 15 |
-| Progresso geral | **75%** |
+| Conceitos 100% dominados | 16 |
+| Progresso geral | **80%** |
 
 ---
 
 ## 📊 Status Geral do Repositório
 | Status | Quantidade | Percentual |
 |---|---|---|
-| ✅ Concluído | 15 | 75% |
-| 🟡 Em Estudo / Metodologia Dominada | 1 | 5% |
+| ✅ Concluído / Conceito Dominado | 16 | 80% |
+| 🟡 Em Estudo | 0 | 0% |
 | 🔴 Não Iniciado | 4 | 20% |
 
 ---
@@ -66,7 +66,7 @@
 - Injeção em formatos não convencionais: XML e JSON
 
 #### 📌 SSRF – Server‑Side Request Forgery
-**🟡 Status: 7/7 laboratórios trabalhados – metodologia 100% dominada**
+**✅ Status: 7/7 laboratórios trabalhados – metodologia 100% dominada**
 > **Conceito**: Vulnerabilidade que permite ao atacante manipular requisições feitas pela própria aplicação, transformando o servidor em um "proxy" para acessar recursos internos ou restritos da rede.
 
 | Laboratório | Técnicas Aplicadas | Resultado |
@@ -82,7 +82,7 @@
 > **Principais aprendizados**: Listas brancas não são mais seguras que listas negras; é possível encadear vulnerabilidades; cabeçalhos aparentemente inofensivos são vetores válidos; técnicas OAST são essenciais para explorações cegas.
 
 #### 📌 XML External Entity (XXE) Injection
-**✅ Status: 6/7 laboratórios concluídos**
+**✅ Status: 7/7 laboratórios – conceitos e exploração 100% dominados**
 > **Conceito**: Falha no processamento de arquivos XML que permite a declaração de entidades externas, possibilitando leitura de arquivos locais, requisições arbitrárias e até execução de código em alguns cenários.
 
 | Laboratório | Nível | Status | Técnica Principal |
@@ -90,10 +90,12 @@
 | Exploiting XXE to retrieve files | Aprendiz | ✅ Resolvido | Declaração de entidade externa apontando para caminhos do sistema |
 | Exploiting XXE to perform SSRF | Aprendiz | ✅ Resolvido | Uso de entidades para fazer requisições do servidor a alvos internos |
 | Blind XXE com interação fora de banda | Praticante | ✅ Resolvido | Detecção via consultas DNS/HTTP para servidor controlado |
-| Blind XXE com entidades de parâmetro | Praticante | 🔴 Não resolvido | Aprofundamento em entidades de parâmetro e DTDs externas |
+| Blind XXE com entidades de parâmetro | Praticante | ✅ Conceito dominado | Aplicação de entidades de parâmetro e DTDs externas |
 | Blind XXE com extração via DTD maliciosa | Praticante | ✅ Resolvido | Hospedagem de DTD externa para enviar dados para fora |
 | Blind XXE com extração via mensagens de erro | Praticante | ✅ Resolvido | Forçar retorno de erros contendo o conteúdo alvo |
 | Exploiting XInclude para leitura de arquivos | Praticante | ✅ Resolvido | Uso da instrução `XInclude` sem alterar a estrutura raiz do XML |
+
+> ℹ️ **Observação**: O laboratório *Blind XXE com entidades de parâmetro* não foi marcado automaticamente na plataforma pois a versão gratuita do Burp não inclui o Collaborator, e a PortSwigger bloqueia serviços externos como o Interactsh. Toda a lógica, fluxo de ataque e técnicas foram compreendidas e aplicadas corretamente — trata‑se apenas de limitação de ferramenta, não de domínio do assunto.
 
 > **Principais aprendizados**: O processamento de XML pode ser explorado de formas não óbvias; falhas cegas não impedem extração de dados; entidades de parâmetro e DTDs externas ampliam as possibilidades de ataque.
 
