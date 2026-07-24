@@ -11,12 +11,13 @@
 | **Nível** | Intermediário a Avançado |
 | **Plataforma** | PortSwigger Web Security Academy |
 | **Idioma** | Português (PT-BR) |
-| **Total de laboratórios mapeados** | 20 |
-| **Conceitos totalmente dominados** | 16 |
-| **Progresso geral** | 80% |
-| **Concluído / Dominado** | 16 (80%) |
+| **Total de laboratórios mapeados** | 27 |
+| **Conceitos totalmente dominados** | 23 |
+| **Progresso geral** | ~85% |
+| **Concluído / Dominado** | 23 (85%) |
 | **Em estudo** | 0 (0%) |
-| **Não iniciado** | 4 (20%) |
+| **Não iniciado** | 4 (15%) |
+| **Marca de progresso** | Começando com **50 minutos disponíveis**, finalizando com **22 minutos** — cada laboratório resolvido com maior agilidade e domínio. Ontem, **4 laboratórios concluídos** em sequência. |
 
 ---
 
@@ -34,10 +35,10 @@
 - **Tempo estimado gasto**: ~15 horas
 
 ### Avançado – Exploração complexa
-- XXE em todas as variantes, SSTI e Desserialização Insegura
+- XXE em todas as variantes, **SSTI**, Desserialização Insegura
 - Análise e exploração de falhas em lógica de negócio
 - Testes e segurança em APIs REST e GraphQL
-- **Tempo estimado gasto**: ~20 horas
+- **Tempo estimado gasto**: ~22 horas
 
 ---
 
@@ -112,6 +113,23 @@
 
 ---
 
+#### Server-Side Template Injection (SSTI)
+**Status: 7/7 laboratórios concluídos – Conceitos e exploração 100% dominados**
+> **Conceito dominado**: Ocorre quando dados enviados pelo usuário são inseridos diretamente no código de renderização de modelos, permitindo identificação do motor, execução de código arbitrário, acesso a dados sensíveis e contorno de restrições de segurança.
+
+**Laboratórios explorados e lições aprendidas:**
+- *Basic server-side template injection* – Praticante ✅ Resolvido: Motor ERB (Ruby); confirmação com operações matemáticas e execução de comandos.
+- *Basic server-side template injection (code context)* – Praticante ✅ Resolvido: Motor Tornado (Python); quebra de contexto existente antes de injetar código.
+- *Server-side template injection using documentation* – Praticante ✅ Resolvido: Motor Freemarker (Java); uso da documentação oficial para identificar métodos perigosos.
+- *Server-side template injection in an unknown language with a documented exploit* – Praticante ✅ Resolvido: Motor Handlebars (Node.js); identificação por mensagens de erro e uso de exploit público adaptado.
+- *Server-side template injection with information disclosure via user-supplied objects* – Praticante ✅ Resolvido: Motor Django; acesso a objetos internos e extração de dados sensíveis como a chave secreta do framework.
+- *Server-side template injection in a sandboxed environment* – Especialista ✅ Resolvido: Motor Freemarker; contorno de sandbox mal implementada usando métodos nativos de objetos Java para leitura de arquivos.
+- *Server-side template injection with a custom exploit* – Especialista ✅ Resolvido: Motor Twig/Tornado; uso de métodos já existentes na aplicação para definir alvo e executar exclusão de arquivos.
+
+**Aprendizados consolidados:** A falta de higienização permite identificar o motor rapidamente; documentação e exploits públicos são recursos fundamentais; proteções como sandbox podem ser contornadas usando apenas recursos nativos; muitas vezes a exploração não exige código novo, mas sim o uso indevido do que a própria aplicação já disponibiliza.
+
+---
+
 ### 🔄 Manipulação de Requisições e Fluxos
 **Status: 100% concluído e dominado**
 - CSRF básico e técnicas de contorno de proteções
@@ -121,7 +139,6 @@
 ---
 
 ## 🚧 Tópicos a Iniciar em Breve
-- SSTI: Injeção em motores de template
 - Desserialização Insegura
 - Falhas em lógica de negócio
 - Segurança em APIs REST e GraphQL
