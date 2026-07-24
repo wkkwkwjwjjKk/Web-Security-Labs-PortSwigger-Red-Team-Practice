@@ -17,7 +17,6 @@
 | **Concluído / Dominado** | 23 (85%) |
 | **Em estudo** | 0 (0%) |
 | **Não iniciado** | 4 (15%) |
-| **Marca de progresso** | Começando com **50 minutos disponíveis**, finalizando com **22 minutos** — cada laboratório resolvido com maior agilidade e domínio. Ontem, **4 laboratórios concluídos** em sequência. |
 
 ---
 
