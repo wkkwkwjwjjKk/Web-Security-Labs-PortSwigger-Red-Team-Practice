@@ -1,8 +1,10 @@
 ---
+
 # Write-Up: Exploração e Domínio de Vulnerabilidades de Lógica de Negócio
 **Autor:** [Aislan]
 **Data:** 10 de agosto de 2026
 **Foco:** Vulnerabilidades de lógica de negócio em aplicações web — resolução de laboratórios práticos e compreensão profunda das falhas conceituais e exploratórias
+
 ---
 
 ## 🔍 Introdução
